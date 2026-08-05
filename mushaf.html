@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d4b39">
+<title>المصحف الشريف | عائلة النتشة</title>
+<style>
+:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#718079;--bg:#fffaf0;--card:#fff;--shadow:0 14px 38px rgba(13,75,57,.15)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 12% 7%,rgba(217,182,93,.25),transparent 25%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}
+.wrap{width:min(900px,94%);margin:auto;padding:20px 0 45px}
+header{text-align:center}.logo{width:108px;height:108px;border-radius:50%;border:4px solid var(--gold);background:white;box-shadow:var(--shadow)}
+h1{font-size:clamp(32px,7vw,52px);margin:12px 0 5px;color:var(--g)}.tag{font-size:19px;color:#765d24;font-weight:800}
+.toolbar{position:sticky;top:0;z-index:5;background:rgba(255,250,240,.94);backdrop-filter:blur(10px);padding:10px;border-radius:18px;box-shadow:var(--shadow);margin:18px 0;display:flex;gap:9px;flex-wrap:wrap}
+.toolbar button,.toolbar a{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:13px;padding:12px 15px;font-size:16px;font-weight:900;cursor:pointer}.toolbar .light{background:#e8f5ee;color:var(--g)}
+.search{width:100%;border:2px solid #e0d2aa;border-radius:17px;padding:15px 17px;font-size:19px;outline:none;background:#fff}.search:focus{border-color:var(--g)}
+.card{background:rgba(255,255,255,.97);border:1px solid #e3d4aa;border-radius:24px;padding:18px;box-shadow:var(--shadow);margin-top:14px}
+.continue{display:none;text-align:center}.continue button{border:0;background:linear-gradient(145deg,var(--g2),var(--g));color:#fff;border-radius:16px;padding:15px 22px;font-size:18px;font-weight:900;cursor:pointer}
+.surahGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:15px}.surah{border:1px solid #dec98c;background:#fff;border-radius:18px;padding:16px;cursor:pointer;text-align:right;display:flex;align-items:center;gap:13px;box-shadow:0 7px 20px rgba(13,75,57,.08)}.surah:hover{transform:translateY(-1px)}
+.num{width:45px;height:45px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-weight:900;flex:none}.surah strong{display:block;font-size:22px;color:var(--g)}.surah small{font-size:14px;color:var(--muted)}
+#reader{display:none}.readerHead{text-align:center}.readerHead h2{font-size:36px;color:var(--g);margin:5px}.readerHead p{color:var(--muted);font-size:17px}
+.ayahs{font-family:'Traditional Arabic','Amiri',Tahoma,serif;font-size:34px;line-height:2.25;text-align:right}.ayah{display:inline}.ayahNum{display:inline-grid;place-items:center;min-width:42px;height:42px;border:2px solid var(--gold);border-radius:50%;font-family:Tahoma,Arial;font-size:16px;color:var(--g);margin:0 7px}
+.loading{text-align:center;font-size:21px;color:var(--g);padding:30px}.error{text-align:center;color:#a3352d;font-size:18px;line-height:1.8}
+footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:25px}
+@media(max-width:620px){.surahGrid{grid-template-columns:1fr}.ayahs{font-size:29px}.toolbar button,.toolbar a{flex:1;text-align:center}.card{padding:15px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة"><h1>المصحف الشريف</h1><div class="tag">ضمن مشروع صدقة جارية لعائلة النتشة</div></header>
+<div class="toolbar">
+<a href="index.html" class="light">🏠 الرئيسية</a>
+<button id="backBtn" class="light" style="display:none">↩ قائمة السور</button>
+<button id="minusBtn" style="display:none">أ−</button>
+<button id="plusBtn" style="display:none">أ+</button>
+<button id="shareBtn" style="display:none">📤 مشاركة السورة</button>
+</div>
+<section id="catalog">
+<div id="continueCard" class="card continue"><p>يمكنك المتابعة من آخر سورة قرأتها.</p><button id="continueBtn">متابعة القراءة</button></div>
+<div class="card"><input id="search" class="search" placeholder="ابحث باسم السورة..." autocomplete="off"><div id="surahList" class="surahGrid"><div class="loading">جاري تحميل قائمة السور...</div></div></div>
+</section>
+<section id="reader">
+<div class="card readerHead"><h2 id="surahTitle"></h2><p id="surahMeta"></p></div>
+<div class="card"><div id="ayahs" class="ayahs"><div class="loading">جاري تحميل السورة...</div></div></div>
+</section>
+<footer>إعداد وإهداء: غازي خريشة النتشة<br><small>﴿ إِنَّ هَذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾</small></footer>
+</main>
+<script>
+const API='https://api.alquran.cloud/v1';
+const catalog=document.getElementById('catalog'),reader=document.getElementById('reader'),listEl=document.getElementById('surahList'),searchEl=document.getElementById('search'),ayahsEl=document.getElementById('ayahs'),titleEl=document.getElementById('surahTitle'),metaEl=document.getElementById('surahMeta'),backBtn=document.getElementById('backBtn'),plusBtn=document.getElementById('plusBtn'),minusBtn=document.getElementById('minusBtn'),shareBtn=document.getElementById('shareBtn'),continueCard=document.getElementById('continueCard'),continueBtn=document.getElementById('continueBtn');
+let surahs=[],currentSurah=null,fontSize=Number(localStorage.natshaQuranFont||34);
+function arNum(n){return Number(n).toLocaleString('ar')}
+function showCatalog(){reader.style.display='none';catalog.style.display='block';backBtn.style.display=plusBtn.style.display=minusBtn.style.display=shareBtn.style.display='none';history.replaceState(null,'',location.pathname)}
+function renderList(data){listEl.innerHTML='';if(!data.length){listEl.innerHTML='<div class="error">لم يتم العثور على سورة بهذا الاسم.</div>';return}data.forEach(s=>{const b=document.createElement('button');b.className='surah';b.innerHTML='<span class="num">'+arNum(s.number)+'</span><span><strong>'+s.name+'</strong><small>'+arNum(s.numberOfAyahs)+' آية • '+(s.revelationType==='Meccan'?'مكية':'مدنية')+'</small></span>';b.onclick=()=>openSurah(s.number);listEl.appendChild(b)})}
+async function loadCatalog(){try{const r=await fetch(API+'/surah');const j=await r.json();surahs=j.data||[];renderList(surahs);const last=Number(localStorage.natshaLastSurah||0);if(last){continueCard.style.display='block';const s=surahs.find(x=>x.number===last);continueBtn.textContent='متابعة سورة '+(s?s.name:'');continueBtn.onclick=()=>openSurah(last)}}catch(e){listEl.innerHTML='<div class="error">تعذر تحميل قائمة السور. تحقق من اتصال الإنترنت ثم حدّث الصفحة.</div>'}}
+async function openSurah(number){catalog.style.display='none';reader.style.display='block';backBtn.style.display=plusBtn.style.display=minusBtn.style.display=shareBtn.style.display='block';ayahsEl.style.fontSize=fontSize+'px';ayahsEl.innerHTML='<div class="loading">جاري تحميل السورة...</div>';scrollTo({top:0,behavior:'smooth'});try{const r=await fetch(API+'/surah/'+number+'/quran-uthmani');const j=await r.json();const s=j.data;currentSurah=s;localStorage.natshaLastSurah=number;location.hash='surah='+number;titleEl.textContent=s.name;metaEl.textContent=arNum(s.numberOfAyahs)+' آية • '+(s.revelationType==='Meccan'?'مكية':'مدنية');ayahsEl.innerHTML=s.ayahs.map(a=>'<span class="ayah">'+a.text+' <span class="ayahNum">'+arNum(a.numberInSurah)+'</span> </span>').join('')}catch(e){ayahsEl.innerHTML='<div class="error">تعذر تحميل السورة. حاول مرة أخرى.</div>'}}
+searchEl.oninput=()=>{const q=searchEl.value.trim().replace(/[أإآ]/g,'ا');renderList(surahs.filter(s=>s.name.replace(/[أإآ]/g,'ا').includes(q)||String(s.number)===q))};
+backBtn.onclick=showCatalog;plusBtn.onclick=()=>{fontSize=Math.min(48,fontSize+2);ayahsEl.style.fontSize=fontSize+'px';localStorage.natshaQuranFont=fontSize};minusBtn.onclick=()=>{fontSize=Math.max(22,fontSize-2);ayahsEl.style.fontSize=fontSize+'px';localStorage.natshaQuranFont=fontSize};
+shareBtn.onclick=async()=>{if(!currentSurah)return;const d={title:'سورة '+currentSurah.name,text:'📖 اقرأ سورة '+currentSurah.name+' ضمن مشروع صدقة جارية لعائلة النتشة',url:location.href};if(navigator.share)await navigator.share(d).catch(()=>{});else await navigator.clipboard.writeText(location.href)};
+window.addEventListener('hashchange',()=>{const m=location.hash.match(/surah=(\d+)/);if(m)openSurah(Number(m[1]));else showCatalog()});
+loadCatalog().then(()=>{const m=location.hash.match(/surah=(\d+)/);if(m)openSurah(Number(m[1]))});
+</script>
+</body>
+</html>
