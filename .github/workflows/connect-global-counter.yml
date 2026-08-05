@@ -1,0 +1,32 @@
+name: Connect Global Tasbeeh Counter
+on:
+  push:
+    paths:
+      - '.github/workflows/connect-global-counter.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Connect counter API
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          api='https://script.google.com/macros/s/AKfycbwTNa5b8pRcW_Iv9cxq7GpgOF1ydv-IDE3Th0Im4CegQnLsxicx0w0c99-05HIZJliG/exec'
+          s=s.replace("const GLOBAL_API='';", f"const GLOBAL_API='{api}';")
+          s=s.replace('عداد محلي حاليًا، وسيصبح جماعيًا بعد ربط قاعدة البيانات.','عداد عالمي مشترك يزيد مع تسبيحات جميع أفراد العائلة.')
+          s=s.replace('عداد محلي تجريبي — العداد العالمي الحقيقي قيد التفعيل','عداد عالمي مباشر')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Connect global tasbeeh counter"
+          git push
