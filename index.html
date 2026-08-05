@@ -1,75 +1,28 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>سبحة إلكترونية - Ghazi Alnatshah</title>
-
+<meta name="theme-color" content="#0d4b39">
+<title>مسبحة عائلة النتشة الإلكترونية</title>
 <style>
-body{
-background:#0f172a;
-font-family:Arial;
-text-align:center;
-color:white;
-margin-top:120px;
-}
-
-h1{
-font-size:40px;
-}
-
-.counter{
-font-size:80px;
-margin:30px;
-}
-
-button{
-font-size:28px;
-padding:20px 40px;
-border-radius:12px;
-border:none;
-cursor:pointer;
-margin:10px;
-}
-
-.tasbeh{
-background:#22c55e;
-color:white;
-}
-
-.reset{
-background:#ef4444;
-color:white;
-}
+:root{--green:#0d4b39;--green2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#73827c;--card:rgba(255,255,255,.94);--shadow:0 18px 55px rgba(13,75,57,.16)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;font-family:Tahoma,Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 12% 8%,rgba(217,182,93,.24),transparent 24%),radial-gradient(circle at 90% 88%,rgba(22,112,84,.18),transparent 28%),linear-gradient(145deg,#fbf4e3,#edf8f2)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.055;background-image:linear-gradient(30deg,#0d4b39 12%,transparent 12.5%,transparent 87%,#0d4b39 87.5%,#0d4b39),linear-gradient(150deg,#0d4b39 12%,transparent 12.5%,transparent 87%,#0d4b39 87.5%,#0d4b39);background-size:70px 122px}
+.wrap{width:min(760px,94%);margin:auto;padding:24px 0 38px;position:relative}header{text-align:center;padding:12px}.seal{width:88px;height:88px;border-radius:50%;margin:auto;display:grid;place-items:center;background:linear-gradient(145deg,var(--green),var(--green2));color:var(--gold);border:4px solid rgba(217,182,93,.75);box-shadow:var(--shadow);font-size:40px}h1{font-size:clamp(27px,6vw,45px);margin:16px 0 7px;color:var(--green)}.sub{font-size:clamp(15px,3.3vw,20px);color:#765d24;font-weight:bold;line-height:1.7}.card{background:var(--card);border:1px solid rgba(217,182,93,.4);border-radius:28px;padding:22px;box-shadow:var(--shadow);backdrop-filter:blur(8px);margin-top:18px}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px}.badge{background:#edf7f2;color:var(--green);padding:8px 13px;border-radius:999px;font-weight:bold;font-size:14px}.total{text-align:center;margin:20px 0 8px}.total small{display:block;color:var(--muted);font-size:14px;margin-bottom:5px}.total strong{font-size:55px;color:var(--green);line-height:1}.zikrName{text-align:center;font-size:25px;font-weight:bold;margin:18px 0 6px;min-height:36px}.zikrHint{text-align:center;color:var(--muted);min-height:24px}.tap{width:min(250px,72vw);height:min(250px,72vw);border-radius:50%;border:8px solid #f4dfa4;display:grid;place-items:center;margin:24px auto 18px;cursor:pointer;user-select:none;color:white;background:linear-gradient(145deg,var(--green2),var(--green));box-shadow:0 16px 40px rgba(13,75,57,.32),inset 0 0 0 8px rgba(255,255,255,.06);transition:transform .08s ease}.tap:active{transform:scale(.965)}.tap span{font-size:clamp(42px,12vw,72px);font-weight:bold}.tap small{display:block;font-size:14px;margin-top:3px;opacity:.9}.progress{height:10px;background:#e7eee9;border-radius:99px;overflow:hidden;margin:10px 0 6px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#c5972f);transition:width .2s}.goal{text-align:center;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}.choice{border:1px solid #e2d6b5;background:white;border-radius:15px;padding:13px 8px;color:var(--ink);font-weight:bold;cursor:pointer;font-size:15px}.choice.active{background:var(--green);color:white;border-color:var(--green)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.action{border:0;border-radius:15px;padding:13px;font-size:15px;font-weight:bold;cursor:pointer}.share{background:#e8f6ef;color:var(--green)}.reset{background:#fff0ee;color:#a3352d}.dua{text-align:center;line-height:2;font-size:18px;color:white;background:linear-gradient(135deg,var(--green),var(--green2))}.dua b{color:#f6dc91}footer{text-align:center;color:var(--green);line-height:1.9;font-weight:bold;padding:22px 8px 0}footer small{display:block;color:var(--muted);font-weight:normal}.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);opacity:0;background:#17372d;color:white;padding:10px 16px;border-radius:999px;transition:.25s;z-index:4}.toast.show{opacity:1;transform:translate(-50%,0)}@media(max-width:520px){.card{padding:17px}.grid{grid-template-columns:1fr 1fr}.choice{font-size:14px}.actions{grid-template-columns:1fr}}
 </style>
-
 </head>
-
 <body>
-
-<h1>سبحة إلكترونية</h1>
-<h3>Ghazi Alnatshah</h3>
-
-<div class="counter" id="count">0</div>
-
-<button class="tasbeh" onclick="add()">تسبيح</button>
-<br>
-<button class="reset" onclick="reset()">تصفير</button>
-
+<main class="wrap"><header><div class="seal">۞</div><h1>مسبحة عائلة النتشة</h1><div class="sub">صدقة جارية عن أحياء وأموات عائلة النتشة</div></header><section class="card"><div class="topline"><div class="badge">ذكرٌ وطمأنينة</div><div class="badge" id="todayBadge">ورد اليوم: 0</div></div><div class="total"><small>إجمالي التسبيحات على هذا الجهاز</small><strong id="totalCount">0</strong></div><div class="zikrName" id="zikrName">سبحان الله</div><div class="zikrHint">اضغط على المسبحة للعدّ</div><button class="tap" id="tapBtn" aria-label="إضافة تسبيحة"><div><span id="sessionCount">0</span><small>اضغط هنا</small></div></button><div class="progress"><div class="bar" id="bar"></div></div><div class="goal" id="goalText">الهدف: 33</div><div class="grid" id="choices"></div><div class="actions"><button class="action share" id="shareBtn">مشاركة المسبحة</button><button class="action reset" id="resetBtn">تصفير العدّاد الحالي</button></div></section><section class="card dua"><b>اللهم تقبّل هذا الذكر</b><br>واجعل ثوابه ونوره ورحمة بركته لأحياء وأموات عائلة النتشة</section><footer>إعداد وإهداء: غازي خريشة النتشة<small>﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾</small></footer></main><div class="toast" id="toast"></div>
 <script>
-
-let count = 0
-
-function add(){
-count++
-document.getElementById("count").innerText = count
-}
-
-function reset(){
-count = 0
-document.getElementById("count").innerText = count
-}
-
+const adhkar=[{name:'سبحان الله',goal:33},{name:'الحمد لله',goal:33},{name:'الله أكبر',goal:34},{name:'لا إله إلا الله',goal:100},{name:'أستغفر الله',goal:100},{name:'اللهم صلِّ وسلم على نبينا محمد',goal:100}];
+let selected=Number(localStorage.getItem('natsha_selected')||0),session=Number(localStorage.getItem('natsha_session')||0),total=Number(localStorage.getItem('natsha_total')||0),today=Number(localStorage.getItem('natsha_today_count')||0);const dateKey=new Date().toISOString().slice(0,10);if(localStorage.getItem('natsha_date')!==dateKey){today=0;localStorage.setItem('natsha_date',dateKey);localStorage.setItem('natsha_today_count','0')}
+const totalEl=document.getElementById('totalCount'),sessionEl=document.getElementById('sessionCount'),nameEl=document.getElementById('zikrName'),bar=document.getElementById('bar'),goalText=document.getElementById('goalText'),choices=document.getElementById('choices'),todayBadge=document.getElementById('todayBadge'),toast=document.getElementById('toast');
+function save(){localStorage.setItem('natsha_selected',selected);localStorage.setItem('natsha_session',session);localStorage.setItem('natsha_total',total);localStorage.setItem('natsha_today_count',today)}
+function render(){const z=adhkar[selected];totalEl.textContent=total.toLocaleString('ar');sessionEl.textContent=session.toLocaleString('ar');nameEl.textContent=z.name;goalText.textContent='الهدف: '+z.goal.toLocaleString('ar');todayBadge.textContent='ورد اليوم: '+today.toLocaleString('ar');bar.style.width=Math.min(100,(session%z.goal)/z.goal*100)+'%';choices.innerHTML='';adhkar.forEach((item,i)=>{const b=document.createElement('button');b.className='choice'+(i===selected?' active':'');b.textContent=item.name;b.onclick=()=>{selected=i;session=0;save();render()};choices.appendChild(b)})}
+function notify(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+function increment(){session++;total++;today++;const z=adhkar[selected];if(navigator.vibrate)navigator.vibrate(25);if(session%z.goal===0)notify('ما شاء الله، أتممت '+z.goal+' مرة');save();render()}
+document.getElementById('tapBtn').addEventListener('click',increment);document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('هل تريد تصفير عدّاد الذكر الحالي؟')){session=0;save();render()}});document.getElementById('shareBtn').addEventListener('click',async()=>{const data={title:'مسبحة عائلة النتشة الإلكترونية',text:'🌿 مسبحة عائلة النتشة الإلكترونية\nصدقة جارية عن أحياء وأموات عائلة النتشة.\nساهم بنشرها ليصل الأجر إلى أكبر عدد ممكن.',url:location.href};if(navigator.share){await navigator.share(data).catch(()=>{})}else{try{await navigator.clipboard.writeText(location.href);notify('تم نسخ رابط المسبحة')}catch(e){notify('انسخ رابط الصفحة وشاركه')}}});render();
 </script>
-
 </body>
 </html>
