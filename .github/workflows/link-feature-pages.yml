@@ -1,0 +1,77 @@
+name: Link Feature Pages
+on:
+  push:
+    paths:
+      - '.github/workflows/link-feature-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link prayer qibla and Quran player
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace(
+              'قرآن كريم • مصحف • أذكار • مسبحة إلكترونية',
+              'قرآن كريم • مصحف • أذكار • مسبحة • مواقيت الصلاة • القبلة',
+              1,
+          )
+          s = s.replace(
+              'قرآن كريم ومصحف وأذكار ومسبحة إلكترونية',
+              'قرآن كريم ومصحف وأذكار ومسبحة ومواقيت الصلاة واتجاه القبلة',
+              1,
+          )
+          s = s.replace(
+              'قرآن كريم ومصحف • أذكار شاملة • مسبحة عالمية',
+              'قرآن ومصحف صوتي • أذكار شاملة • مسبحة عالمية • مواقيت الصلاة • القبلة',
+              1,
+          )
+
+          mushaf_btn = '<button class="mainBtn" onclick="location.href=\'mushaf.html\'"><span>📚</span>قراءة المصحف الشريف</button>'
+          extra = (
+              '<button class="mainBtn" onclick="location.href=\'quran-player.html\'"><span>🎧</span>تشغيل السور واختيار القارئ</button>'
+              '<button class="mainBtn" onclick="location.href=\'prayer.html\'"><span>🕌</span>مواقيت الصلاة حسب موقعك</button>'
+              '<button class="mainBtn" onclick="location.href=\'qibla.html\'"><span>🧭</span>اتجاه القبلة</button>'
+          )
+          if 'quran-player.html' not in s:
+              s = s.replace(mushaf_btn, mushaf_btn + extra, 1)
+
+          mushaf_link = '<a class="radioLink" href="mushaf.html">📚 فتح المصحف الشريف</a>'
+          quran_links = (
+              '<a class="radioLink" href="quran-player.html">🎧 تشغيل سورة واختيار القارئ</a>'
+              '<a class="radioLink" href="prayer.html">🕌 مواقيت الصلاة</a>'
+              '<a class="radioLink" href="qibla.html">🧭 اتجاه القبلة</a>'
+          )
+          if '🎧 تشغيل سورة واختيار القارئ' not in s:
+              s = s.replace(mushaf_link, mushaf_link + quran_links, 1)
+
+          s = s.replace(
+              "📖 قرآن كريم • 📿 مسبحة إلكترونية • 🌅🌙 أذكار شاملة",
+              "📖 قرآن ومصحف صوتي • 📿 مسبحة عالمية • 🌅🌙 أذكار • 🕌 صلاة • 🧭 قبلة",
+              1,
+          )
+
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('sw.js')
+          sw_text = "const CACHE='natsha-v4';const ASSETS=['./','index.html','radio.html','mushaf.html','quran-player.html','prayer.html','qibla.html','natsha-family-logo.svg','natsha-project-poster.svg','manifest.json'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./'))))});"
+          sw.write_text(sw_text, encoding='utf-8')
+
+          manifest = Path('manifest.json')
+          manifest.write_text('''{"name":"صدقة جارية لعائلة النتشة","short_name":"النتشة","description":"قرآن ومصحف صوتي وأذكار ومسبحة عالمية ومواقيت الصلاة واتجاه القبلة","start_url":"./","display":"standalone","background_color":"#fffaf0","theme_color":"#0d4b39","lang":"ar","dir":"rtl","icons":[{"src":"natsha-family-logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}''', encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html sw.js manifest.json
+          git diff --cached --quiet || git commit -m "Link prayer qibla and Quran player"
+          git push
