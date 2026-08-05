@@ -1,0 +1,30 @@
+name: Link reliable radio
+on:
+  push:
+    paths:
+      - '.github/workflows/link-radio.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace old radio link
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='https://script.google.com/macros/s/AKfycby5WBpwkH4PDrnF4m7qUdGp1AuujBTHg_UR_KhDPrN6kY-G8GZMh84McJvwmf1GD_wN/exec'
+          s=s.replace(old,'radio.html')
+          s=s.replace('فتح إذاعة النتشة للقرآن الكريم','فتح إذاعة النتشة المحسّنة')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git diff --cached --quiet || git commit -m "Use reliable Quran radio"
+          git push
