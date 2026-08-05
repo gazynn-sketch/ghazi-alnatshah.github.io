@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d4b39">
+<title>اتجاه القبلة | عائلة النتشة</title>
+<style>
+:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#6d7b75;--shadow:0 14px 38px rgba(13,75,57,.16)}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 12% 7%,rgba(217,182,93,.25),transparent 25%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}.wrap{width:min(850px,94%);margin:auto;padding:20px 0 45px}header{text-align:center}.logo{width:106px;height:106px;border-radius:50%;border:4px solid var(--gold);background:#fff;box-shadow:var(--shadow)}h1{font-size:clamp(32px,7vw,50px);margin:12px 0 5px;color:var(--g)}.tag{font-size:18px;color:#765d24;font-weight:800}.top{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.btn,.top a{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:14px;padding:14px 18px;font-size:17px;font-weight:900;cursor:pointer}.light{background:#e7f4ed!important;color:var(--g)!important}.card{background:rgba(255,255,255,.97);border:1px solid #e2d3aa;border-radius:25px;padding:20px;box-shadow:var(--shadow);margin-top:15px}.privacy{background:#f3fbf6;border-right:5px solid var(--g);font-size:15px;line-height:1.8}.status{text-align:center;font-weight:900;color:var(--g);line-height:1.8}.compassWrap{text-align:center}.compass{position:relative;width:min(330px,82vw);height:min(330px,82vw);border-radius:50%;margin:20px auto;background:radial-gradient(circle,#fff 0 55%,#f4edda 56% 100%);border:10px solid var(--g);box-shadow:0 18px 42px rgba(13,75,57,.25)}.compass:before,.compass:after{position:absolute;font-weight:900;color:var(--g);font-size:22px}.compass:before{content:'ش';top:8px;left:50%;transform:translateX(-50%)}.compass:after{content:'ج';bottom:8px;left:50%;transform:translateX(-50%)}.east,.west{position:absolute;top:50%;transform:translateY(-50%);font-weight:900;color:var(--g);font-size:22px}.east{right:12px}.west{left:12px}.needle{position:absolute;left:50%;top:50%;width:12px;height:42%;transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(0deg);transition:transform .18s linear}.needle:before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:34px solid var(--gold)}.needle:after{content:'';position:absolute;left:50%;top:28px;bottom:0;width:8px;background:linear-gradient(var(--gold),var(--g));transform:translateX(-50%);border-radius:10px}.center{position:absolute;left:50%;top:50%;width:26px;height:26px;border-radius:50%;background:var(--g);border:5px solid #fff;transform:translate(-50%,-50%);z-index:3}.kaaba{position:absolute;left:50%;top:18%;transform:translateX(-50%);font-size:38px;z-index:4}.degree{font-size:44px;font-weight:900;color:var(--g);margin-top:6px}.hint{font-size:16px;color:var(--muted);line-height:1.9}.aligned{box-shadow:0 0 0 8px rgba(217,182,93,.35),0 18px 42px rgba(13,75,57,.25)}footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:24px}@media(max-width:650px){.top>*{flex:1;text-align:center}.card{padding:16px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة"><h1>اتجاه القبلة</h1><div class="tag">بوصلة تقريبية حسب موقعك</div></header>
+<div class="top"><a class="light" href="index.html">🏠 الرئيسية</a><a class="light" href="prayer.html">🕋 مواقيت الصلاة</a><button class="btn" id="locationBtn">📍 استخدام موقعي</button><button class="btn" id="compassBtn">🧭 فعّل البوصلة</button></div>
+<div class="card privacy">يُستخدم موقعك على جهازك لحساب اتجاه القبلة فقط، ولا يُحفظ في عداد العائلة أو Google Drive.</div>
+<div id="status" class="card status">اضغط «استخدام موقعي» لحساب اتجاه القبلة.</div>
+<section id="compassSection" class="card compassWrap" style="display:none">
+<div id="compass" class="compass"><span class="east">شـر</span><span class="west">غـر</span><div class="kaaba">🕋</div><div id="needle" class="needle"></div><div class="center"></div></div>
+<div id="degree" class="degree">—°</div>
+<div id="hint" class="hint">وجّه الهاتف حتى تصبح علامة الكعبة في أعلى البوصلة. القراءة تعتمد على مستشعر الهاتف وقد تتأثر بالمعادن والأغطية المغناطيسية.</div>
+</section>
+<footer>إعداد وإهداء: غازي خريشة النتشة<br><small>﴿ فَوَلِّ وَجْهَكَ شَطْرَ الْمَسْجِدِ الْحَرَامِ ﴾</small></footer>
+</main>
+<script>
+const API='https://api.aladhan.com/v1';
+const statusEl=document.getElementById('status'),section=document.getElementById('compassSection'),needle=document.getElementById('needle'),degreeEl=document.getElementById('degree'),compassEl=document.getElementById('compass'),hintEl=document.getElementById('hint');
+let qiblaBearing=null,lastHeadings=[];
+function setStatus(t,error=false){statusEl.textContent=t;statusEl.style.color=error?'#a3352d':'var(--g)'}
+function localQibla(lat,lng){const kaabaLat=21.422487*Math.PI/180,phi=lat*Math.PI/180,dl=(39.826206-lng)*Math.PI/180;const y=Math.sin(dl)*Math.cos(kaabaLat),x=Math.cos(phi)*Math.sin(kaabaLat)-Math.sin(phi)*Math.cos(kaabaLat)*Math.cos(dl);return (Math.atan2(y,x)*180/Math.PI+360)%360}
+async function loadQibla(lat,lng){setStatus('جاري حساب اتجاه القبلة...');let direction=localQibla(lat,lng);try{const r=await fetch(API+'/qibla/'+lat.toFixed(4)+'/'+lng.toFixed(4));const j=await r.json();if(j.code===200&&Number.isFinite(Number(j.data?.direction)))direction=Number(j.data.direction)}catch(e){}qiblaBearing=direction;degreeEl.textContent=direction.toFixed(1)+'° من الشمال';needle.style.transform='translate(-50%,-100%) rotate('+direction+'deg)';section.style.display='block';setStatus('تم حساب اتجاه القبلة بنجاح');localStorage.natshaCoords=JSON.stringify({lat:Number(lat.toFixed(3)),lng:Number(lng.toFixed(3)),savedAt:Date.now()})}
+function getLocation(){if(!navigator.geolocation){setStatus('المتصفح لا يدعم تحديد الموقع.',true);return}setStatus('بانتظار السماح بالموقع...');navigator.geolocation.getCurrentPosition(p=>loadQibla(p.coords.latitude,p.coords.longitude),e=>setStatus(e.code===1?'تم رفض إذن الموقع. افتح مواقيت الصلاة واختر موقعك ثم عد إلى القبلة.':'تعذر تحديد الموقع.',true),{enableHighAccuracy:false,timeout:12000,maximumAge:1800000})}
+function smoothHeading(v){lastHeadings.push(v);if(lastHeadings.length>8)lastHeadings.shift();let s=0,c=0;lastHeadings.forEach(h=>{s+=Math.sin(h*Math.PI/180);c+=Math.cos(h*Math.PI/180)});return (Math.atan2(s,c)*180/Math.PI+360)%360}
+function headingFromEvent(e){if(typeof e.webkitCompassHeading==='number')return e.webkitCompassHeading;if(typeof e.alpha==='number')return (360-e.alpha)%360;return null}
+function updateCompass(e){if(qiblaBearing===null)return;const raw=headingFromEvent(e);if(raw===null)return;const heading=smoothHeading(raw),rotation=(qiblaBearing-heading+360)%360;needle.style.transform='translate(-50%,-100%) rotate('+rotation+'deg)';const error=Math.min(rotation,360-rotation);compassEl.classList.toggle('aligned',error<5);hintEl.textContent=error<5?'أنت قريب جدًا من اتجاه القبلة ✓':'حرّك الهاتف ببطء حتى تصبح علامة الكعبة في أعلى البوصلة.'}
+async function enableCompass(){if(qiblaBearing===null){setStatus('احسب الموقع أولًا ثم فعّل البوصلة.',true);return}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')throw new Error('denied')}window.addEventListener('deviceorientationabsolute',updateCompass,true);window.addEventListener('deviceorientation',updateCompass,true);setStatus('تم تفعيل البوصلة. أبعد الهاتف عن المعادن وحرّكه بشكل رقم 8 للمعايرة.')}catch(e){setStatus('تعذر تفعيل مستشعر البوصلة. استخدم الدرجة الظاهرة من الشمال.',true)}}
+document.getElementById('locationBtn').onclick=getLocation;document.getElementById('compassBtn').onclick=enableCompass;
+try{const saved=JSON.parse(localStorage.natshaCoords||'null');if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lng))loadQibla(saved.lat,saved.lng)}catch(e){}
+</script>
+</body>
+</html>
