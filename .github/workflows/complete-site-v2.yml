@@ -1,0 +1,76 @@
+name: Complete Natsha Site V2
+on:
+  push:
+    paths:
+      - '.github/workflows/complete-site-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upgrade site
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'og:title' not in s:
+              s=s.replace('<title>صدقة جارية لعائلة النتشة</title>','''<title>صدقة جارية لعائلة النتشة</title>
+<meta name="description" content="قرآن كريم وأذكار ومسبحة إلكترونية — صدقة جارية عن أحياء وأموات عائلة النتشة">
+<meta property="og:title" content="صدقة جارية لعائلة النتشة">
+<meta property="og:description" content="قرآن كريم • أذكار الصباح والمساء • مسبحة إلكترونية">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gazynn-sketch.github.io/ghazi-alnatshah.github.io/">
+<meta property="og:image" content="https://gazynn-sketch.github.io/ghazi-alnatshah.github.io/natsha-project-poster.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="natsha-family-logo.svg">
+<link rel="apple-touch-icon" href="natsha-family-logo.svg">
+<link rel="manifest" href="manifest.json">''',1)
+          s=re.sub(r'\.seal\{[^}]*\}', '.seal{width:116px;height:116px;border-radius:50%;margin:auto;display:block;object-fit:cover;background:#fff;border:4px solid var(--gold);box-shadow:0 14px 35px rgba(13,75,57,.25)}', s, count=1)
+          s=s.replace('<header><div class="seal">۞</div>','<header><img class="seal" src="natsha-family-logo.svg" alt="شعار عائلة النتشة">',1)
+          if 'id="shareProject"' not in s:
+              s=s.replace('</div></div><div class="card dua"><b>اللهم اجعل ثواب هذا العمل</b>','''</div><div class="actions" style="margin-top:16px"><button class="share" id="shareProject">📤 شارك المشروع</button><button class="share" id="installApp" style="display:none">📲 ثبّت التطبيق</button></div><a class="radioLink" style="margin-top:16px" href="natsha-project-poster.png" target="_blank" download>🖼️ تحميل صورة المشروع</a></div><div class="card dua"><b>اللهم اجعل ثواب هذا العمل</b>''',1)
+          s=s.replace('let globalTotal=+(localStorage.nsGlobalPreview||2483915);','let globalTotal=+(localStorage.nsGlobalPreview||0);if(!GLOBAL_API&&globalTotal>1000000){globalTotal=0;localStorage.nsGlobalPreview=0;}',1)
+          s=s.replace("نسخة تجريبية محلية — يلزم ربط قاعدة بيانات مشتركة","عداد محلي تجريبي — العداد العالمي الحقيقي قيد التفعيل")
+          if 'beforeinstallprompt' not in s:
+              s=s.replace('</body>','''<script>
+const shareProject=document.getElementById('shareProject');
+if(shareProject)shareProject.onclick=async()=>{const d={title:'صدقة جارية لعائلة النتشة',text:'🌿 صدقة جارية لعائلة النتشة\\n📖 قرآن كريم • 📿 مسبحة إلكترونية • 🌅 أذكار الصباح • 🌙 أذكار المساء',url:location.href};if(navigator.share)await navigator.share(d).catch(()=>{});else{await navigator.clipboard.writeText(location.href)}};
+let deferredInstall=null;const installBtn=document.getElementById('installApp');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(installBtn)installBtn.style.display='block'});
+if(installBtn)installBtn.onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;installBtn.style.display='none'};
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body>''',1)
+          p.write_text(s,encoding='utf-8')
+          Path('manifest.json').write_text('''{
+  "name":"صدقة جارية لعائلة النتشة",
+  "short_name":"النتشة",
+  "description":"قرآن كريم وأذكار ومسبحة إلكترونية",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#fffaf0",
+  "theme_color":"#0d4b39",
+  "lang":"ar",
+  "dir":"rtl",
+  "icons":[{"src":"natsha-family-logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}''',encoding='utf-8')
+          Path('sw.js').write_text("""const CACHE='natsha-v2';const ASSETS=['./','index.html','radio.html','natsha-family-logo.svg','natsha-project-poster.png','manifest.json'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./'))))});""",encoding='utf-8')
+          poster='''<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffaf0"/><stop offset="1" stop-color="#e9f5ef"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0d4b39"/><stop offset="1" stop-color="#167054"/></linearGradient></defs><rect width="1080" height="1920" fill="url(#bg)"/><rect x="40" y="40" width="1000" height="1840" rx="52" fill="none" stroke="#d9b65d" stroke-width="8"/><image href="natsha-family-logo.svg" x="390" y="90" width="300" height="300"/><text x="540" y="470" text-anchor="middle" font-family="Tahoma,Arial" font-size="82" font-weight="700" fill="#0d4b39">صدقة جارية لعائلة النتشة</text><text x="540" y="550" text-anchor="middle" font-family="Tahoma,Arial" font-size="42" font-weight="700" fill="#9a7223">قرآن كريم • أذكار • مسبحة إلكترونية</text><g font-family="Tahoma,Arial" font-size="44" font-weight="700" text-anchor="middle"><rect x="100" y="670" width="410" height="220" rx="36" fill="url(#g)"/><text x="305" y="770" fill="#fff">📖 إذاعة القرآن الكريم</text><text x="305" y="835" fill="#f4db92" font-size="31">استماع مباشر ومحطات متعددة</text><rect x="570" y="670" width="410" height="220" rx="36" fill="url(#g)"/><text x="775" y="770" fill="#fff">📿 المسبحة الإلكترونية</text><text x="775" y="835" fill="#f4db92" font-size="31">أذكار متنوعة وحفظ العدّاد</text><rect x="100" y="940" width="410" height="220" rx="36" fill="#d99b25"/><text x="305" y="1040" fill="#fff">🌅 أذكار الصباح</text><text x="305" y="1105" fill="#fffaf0" font-size="31">خط كبير وسهل القراءة</text><rect x="570" y="940" width="410" height="220" rx="36" fill="#263c75"/><text x="775" y="1040" fill="#fff">🌙 أذكار المساء</text><text x="775" y="1105" fill="#eef1ff" font-size="31">في مكان واحد</text></g><rect x="100" y="1260" width="880" height="230" rx="38" fill="url(#g)"/><text x="540" y="1350" text-anchor="middle" font-family="Tahoma,Arial" font-size="44" font-weight="700" fill="#f4db92">اللهم اجعل ثواب هذا العمل</text><text x="540" y="1420" text-anchor="middle" font-family="Tahoma,Arial" font-size="38" fill="#fff">لأحياء وأموات عائلة النتشة</text><rect x="100" y="1580" width="880" height="120" rx="34" fill="#0d4b39"/><text x="540" y="1655" text-anchor="middle" font-family="Tahoma,Arial" font-size="39" font-weight="700" fill="#fff">ساهم بالنشر.. فالدال على الخير كفاعله</text><text x="540" y="1770" text-anchor="middle" font-family="Tahoma,Arial" font-size="31" fill="#0d4b39">gazynn-sketch.github.io/ghazi-alnatshah.github.io</text><text x="540" y="1830" text-anchor="middle" font-family="Tahoma,Arial" font-size="28" fill="#765d24">إعداد وإهداء: غازي خريشة النتشة</text></svg>'''
+          Path('natsha-project-poster.svg').write_text(poster,encoding='utf-8')
+          PY
+      - name: Render poster PNG
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin
+          rsvg-convert -w 1080 -h 1920 natsha-project-poster.svg > natsha-project-poster.png
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html manifest.json sw.js natsha-project-poster.svg natsha-project-poster.png
+          git diff --cached --quiet || git commit -m "Complete Natsha site v2"
+          git push
