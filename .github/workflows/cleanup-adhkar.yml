@@ -1,0 +1,22 @@
+name: Cleanup Adhkar Script
+on:
+  push:
+    paths:
+      - '.github/workflows/cleanup-adhkar.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove obsolete handlers
+        run: python3 .github/scripts/cleanup_adhkar.py
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Cleanup expanded adhkar handlers"
+          git push
