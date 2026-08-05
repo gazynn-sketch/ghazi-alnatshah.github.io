@@ -1,0 +1,33 @@
+name: Fix family logo source
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-logo-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use family logo SVG
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('src="natsha-family-logo.png"','src="natsha-family-logo.svg"')
+          s=s.replace('<header><div class="seal">۞</div>','<header><img class="seal" src="natsha-family-logo.svg" alt="شعار عائلة النتشة">')
+          old='.seal{width:90px;height:90px;border-radius:50%;margin:auto;display:grid;place-items:center;background:linear-gradient(145deg,var(--g),var(--g2));color:var(--gold);border:4px solid var(--gold);font-size:42px;box-shadow:var(--shadow)}'
+          new='.seal{width:118px;height:118px;border-radius:50%;margin:auto;display:block;object-fit:cover;background:#fff;border:4px solid var(--gold);padding:4px;box-shadow:var(--shadow)}'
+          s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Use Natsha family logo SVG"
+          git push
