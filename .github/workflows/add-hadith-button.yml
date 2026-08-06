@@ -1,0 +1,43 @@
+name: Add hadith button
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-hadith-button.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add hadith button and refresh cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          marker = '<button class="mainBtn" onclick="location.href=\'notifications.html\'"><span>🔔</span>إشعارات العائلة</button>'
+          button = '<button class="mainBtn" onclick="location.href=\'hadith.html\'"><span>📜</span>الحديث الشريف</button>'
+          if button not in text:
+              text = text.replace(marker, marker + button, 1)
+          index.write_text(text, encoding='utf-8')
+          sw = Path('sw.js')
+          sw_text = sw.read_text(encoding='utf-8')
+          sw_text = sw_text.replace("const CACHE='natsha-v13'", "const CACHE='natsha-v14'", 1)
+          if "'hadith.html'" not in sw_text:
+              sw_text = sw_text.replace("'notifications.html'", "'notifications.html','hadith.html'", 1)
+          sw.write_text(sw_text, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Add hadith section button" || exit 0
+          git push
