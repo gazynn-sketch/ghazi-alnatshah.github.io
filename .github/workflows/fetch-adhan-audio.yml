@@ -1,0 +1,33 @@
+name: Fetch public-domain adhan audio
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fetch-adhan-audio.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download and verify CC0 adhan recording
+        run: |
+          mkdir -p android-app/app/src/main/res/raw
+          curl -L --fail --retry 4 --retry-delay 3 \
+            'https://upload.wikimedia.org/wikipedia/commons/b/b0/Beautiful_adhan.ogg' \
+            -o android-app/app/src/main/res/raw/adhan.ogg
+          echo 'a1fa4fd942401922c5c3301816384aae86956522  android-app/app/src/main/res/raw/adhan.ogg' | sha1sum -c -
+
+      - name: Commit audio file
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add android-app/app/src/main/res/raw/adhan.ogg
+          git diff --cached --quiet || git commit -m 'Add CC0 adhan audio for prayer alerts'
+          git push
