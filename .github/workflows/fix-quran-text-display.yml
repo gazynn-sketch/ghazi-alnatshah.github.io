@@ -1,0 +1,45 @@
+name: Fix Quran Text Display
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-quran-text-display.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use clear Arabic Quran edition and refresh cache
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('mushaf.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace("API+'/surah/'+number+'/quran-uthmani'", "API+'/surah/'+number+'/quran-simple'")
+          s = s.replace("font-family:'Traditional Arabic','Amiri',Tahoma,serif", "font-family:'Noto Naskh Arabic','Amiri','Traditional Arabic',Tahoma,serif")
+          s = s.replace("<p id=\"surahMeta\"></p>", "<p id=\"surahMeta\"></p><p style=\"font-size:14px;color:#765d24\">النص بالرسم الإملائي الواضح مع التشكيل ليتوافق مع جميع الهواتف.</p>")
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('sw.js')
+          if sw.exists():
+              t = sw.read_text(encoding='utf-8')
+              m = re.search(r"natsha-v(\d+)", t)
+              if m:
+                  t = t.replace(m.group(0), f"natsha-v{int(m.group(1))+1}", 1)
+              sw.write_text(t, encoding='utf-8')
+          PY
+
+      - name: Commit correction
+        run: |
+          git config user.name "gazynn-sketch"
+          git config user.email "gazynn@gmail.com"
+          git add mushaf.html sw.js
+          git diff --cached --quiet || git commit -m "Fix Quran text rendering and use clear Arabic edition"
+          git push
