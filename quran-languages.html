@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d4b39">
+<title>القرآن بلغات العالم | عائلة النتشة</title>
+<style>
+:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#6d7b75;--bg:#fffaf0;--red:#a3352d;--shadow:0 14px 38px rgba(13,75,57,.15)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 12% 6%,rgba(217,182,93,.27),transparent 25%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}
+.wrap{width:min(1000px,94%);margin:auto;padding:20px 0 45px}
+header{text-align:center}.logo{width:108px;height:108px;border-radius:50%;border:4px solid var(--gold);background:#fff;box-shadow:var(--shadow)}
+h1{font-size:clamp(32px,7vw,52px);margin:12px 0 5px;color:var(--g)}.tag{font-size:19px;color:#765d24;font-weight:800;line-height:1.8}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.btn,.top a{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:14px;padding:14px 18px;font-size:17px;font-weight:900;cursor:pointer}.light{background:#e7f4ed!important;color:var(--g)!important}
+.card{background:rgba(255,255,255,.97);border:1px solid #e2d3aa;border-radius:25px;padding:20px;box-shadow:var(--shadow);margin-top:15px}
+.notice{font-size:17px;line-height:1.9;text-align:center;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff}.notice b{color:#f4db92}
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}label{font-size:16px;font-weight:900;color:var(--g)}select{width:100%;margin-top:7px;border:2px solid #e1d2a9;border-radius:14px;padding:14px;font-size:17px;background:#fff;outline:none}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}.actions button{border:0;border-radius:13px;background:var(--g);color:#fff;padding:13px 17px;font-size:16px;font-weight:900;cursor:pointer}.actions .alt{background:#e7f4ed;color:var(--g)}
+.status{text-align:center;font-weight:900;color:var(--g);line-height:1.8;padding:9px}.error{color:var(--red)}
+.meta{text-align:center;line-height:1.9}.meta h2{font-size:32px;color:var(--g);margin:4px}.meta strong{color:#765d24}.count{display:inline-block;background:#e7f4ed;color:var(--g);border-radius:999px;padding:7px 13px;margin:4px;font-weight:900}
+.ayahList{display:grid;gap:14px}.ayahCard{background:#fff;border:1px solid #e2d3aa;border-radius:22px;padding:19px;box-shadow:0 8px 25px rgba(13,75,57,.08)}
+.ayahHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.ayahNum{display:grid;place-items:center;width:45px;height:45px;border:2px solid var(--gold);border-radius:50%;font-weight:900;color:var(--g);flex:none}.surahName{font-weight:900;color:#765d24}
+.arabic{font-family:'Noto Naskh Arabic','Amiri','Traditional Arabic',Tahoma,serif;font-size:32px;line-height:2.1;text-align:right;color:#123e31;border-bottom:1px solid #eadfbf;padding-bottom:12px}
+.translation{font-size:21px;line-height:1.9;padding-top:12px;color:#273d35;unicode-bidi:plaintext}
+.translationLabel{font-size:14px;font-weight:900;color:#765d24;margin-top:8px}
+.loading{text-align:center;font-size:21px;color:var(--g);padding:30px}footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:25px}
+@media(max-width:760px){.fields{grid-template-columns:1fr}.top>*{flex:1;text-align:center}.arabic{font-size:28px}.translation{font-size:19px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة"><h1>القرآن بلغات العالم</h1><div class="tag">النص العربي مع ترجمة معاني القرآن باللغات المتوفرة</div></header>
+<div class="top"><a class="light" href="index.html">🏠 الرئيسية</a><a class="light" href="mushaf.html">📚 المصحف الشريف</a><a class="light" href="quran-player.html">🎧 الاستماع للقرآن</a></div>
+<div class="card notice"><b>تنبيه مهم:</b> النص العربي هو القرآن الكريم، أما النصوص الأخرى فهي ترجمات لمعانيه وليست قرآنًا. تُعرض النصوص كما تصل من المصدر، مع إظهار اسم المترجم ومعرّف النسخة.</div>
+<div class="card fields">
+<label>🌍 اختر اللغة<select id="language"><option>جاري تحميل اللغات...</option></select></label>
+<label>📘 اختر الترجمة<select id="edition"><option>جاري تحميل الترجمات...</option></select></label>
+<label>📖 اختر السورة<select id="surah"><option>جاري تحميل السور...</option></select></label>
+</div>
+<div class="card"><div id="catalogStatus" class="status">جاري تحميل اللغات والترجمات المتوفرة...</div><div class="actions"><button id="loadBtn">عرض السورة والترجمة</button><button class="alt" id="minusBtn">أ−</button><button class="alt" id="plusBtn">أ+</button><button class="alt" id="shareBtn">📤 مشاركة</button></div></div>
+<section id="reader" style="display:none">
+<div class="card meta"><h2 id="surahTitle"></h2><div><span class="count" id="languageName"></span><span class="count" id="editionName"></span></div><p id="editionMeta"></p></div>
+<div id="ayahList" class="ayahList"><div class="loading">جاري تحميل السورة والترجمة...</div></div>
+<div class="card actions"><button id="prevBtn">السورة السابقة</button><button id="nextBtn">السورة التالية</button></div>
+</section>
+<footer>إعداد وإهداء: غازي خريشة النتشة<br><small>صدقة جارية عن أحياء وأموات عائلة النتشة</small></footer>
+</main>
+<script>
+const API='https://api.alquran.cloud/v1';
+const languageEl=document.getElementById('language'),editionEl=document.getElementById('edition'),surahEl=document.getElementById('surah'),statusEl=document.getElementById('catalogStatus'),reader=document.getElementById('reader'),listEl=document.getElementById('ayahList'),titleEl=document.getElementById('surahTitle'),languageNameEl=document.getElementById('languageName'),editionNameEl=document.getElementById('editionName'),editionMetaEl=document.getElementById('editionMeta');
+let translations=[],surahs=[],fontSize=Number(localStorage.natshaWorldQuranFont||32),currentSurah=1,currentEdition='';
+const languageNames=new Intl.DisplayNames(['ar'],{type:'language'});
+function ar(n){return Number(n).toLocaleString('ar')}
+function langName(code){try{return languageNames.of(code)||code.toUpperCase()}catch{return code.toUpperCase()}}
+function validateEdition(s,expected){if(!s||!Array.isArray(s.ayahs)||s.ayahs.length!==Number(expected))throw new Error('توقف العرض: بيانات السورة غير مكتملة');s.ayahs.forEach((a,i)=>{if(Number(a.numberInSurah)!==i+1||typeof a.text!=='string'||!a.text.trim())throw new Error('توقف العرض: خلل في ترتيب الآيات أو نصها')})}
+function fillLanguages(){const codes=[...new Set(translations.map(x=>x.language))].sort((a,b)=>langName(a).localeCompare(langName(b),'ar'));languageEl.innerHTML='';codes.forEach(code=>{const o=document.createElement('option');o.value=code;o.textContent=langName(code)+' ('+translations.filter(x=>x.language===code).length+')';languageEl.appendChild(o)});const saved=localStorage.natshaWorldLanguage||'en';languageEl.value=codes.includes(saved)?saved:(codes.includes('en')?'en':codes[0]);fillEditions()}
+function fillEditions(){const code=languageEl.value;const items=translations.filter(x=>x.language===code).sort((a,b)=>a.name.localeCompare(b.name,code));editionEl.innerHTML='';items.forEach(x=>{const o=document.createElement('option');o.value=x.identifier;o.textContent=x.name+(x.englishName&&x.englishName!==x.name?' — '+x.englishName:'');editionEl.appendChild(o)});const saved=localStorage.natshaWorldEdition;if(saved&&items.some(x=>x.identifier===saved))editionEl.value=saved;currentEdition=editionEl.value;statusEl.textContent='متوفر '+ar(items.length)+' ترجمة بلغة '+langName(code)}
+function fillSurahs(){surahEl.innerHTML='';surahs.forEach(s=>{const o=document.createElement('option');o.value=s.number;o.textContent=ar(s.number)+' — '+s.name+' ('+ar(s.numberOfAyahs)+' آية)';surahEl.appendChild(o)});surahEl.value=localStorage.natshaWorldSurah||1}
+async function loadCatalog(){try{const [er,sr]=await Promise.all([fetch(API+'/edition?format=text&type=translation'),fetch(API+'/surah')]);if(!er.ok||!sr.ok)throw new Error('تعذر الاتصال بالمصدر');const ej=await er.json(),sj=await sr.json();translations=(ej.data||[]).filter(x=>x.identifier&&x.language&&x.type==='translation');surahs=sj.data||[];if(!translations.length||surahs.length!==114)throw new Error('بيانات اللغات أو السور غير مكتملة');fillLanguages();fillSurahs();statusEl.textContent='تم تحميل '+ar(translations.length)+' ترجمة ضمن '+ar(new Set(translations.map(x=>x.language)).size)+' لغة متوفرة'}catch(e){statusEl.classList.add('error');statusEl.textContent=e.message||'تعذر تحميل اللغات والترجمات'} }
+async function openSurah(number=Number(surahEl.value)){const ed=editionEl.value;if(!ed)return;const surahInfo=surahs.find(x=>x.number===Number(number));if(!surahInfo)return;currentSurah=Number(number);currentEdition=ed;localStorage.natshaWorldLanguage=languageEl.value;localStorage.natshaWorldEdition=ed;localStorage.natshaWorldSurah=number;reader.style.display='block';listEl.innerHTML='<div class="loading">جاري تحميل السورة والترجمة...</div>';window.scrollTo({top:reader.offsetTop-10,behavior:'smooth'});try{const r=await fetch(API+'/surah/'+number+'/editions/quran-simple,'+encodeURIComponent(ed));if(!r.ok)throw new Error('تعذر تحميل السورة');const j=await r.json(),sets=j.data||[];const arabic=sets.find(x=>x.edition?.identifier==='quran-simple'),translated=sets.find(x=>x.edition?.identifier===ed);validateEdition(arabic,surahInfo.numberOfAyahs);validateEdition(translated,surahInfo.numberOfAyahs);titleEl.textContent='سورة '+surahInfo.name;languageNameEl.textContent='🌍 '+langName(translated.edition.language);editionNameEl.textContent='📘 '+translated.edition.name;editionMetaEl.textContent='المترجم/النسخة: '+translated.edition.englishName+' — المعرّف: '+translated.edition.identifier;listEl.innerHTML='';arabic.ayahs.forEach((a,i)=>{const t=translated.ayahs[i];const card=document.createElement('article');card.className='ayahCard';const head=document.createElement('div');head.className='ayahHead';const num=document.createElement('span');num.className='ayahNum';num.textContent=ar(a.numberInSurah);const label=document.createElement('span');label.className='surahName';label.textContent=surahInfo.name;head.append(label,num);const arText=document.createElement('div');arText.className='arabic';arText.style.fontSize=fontSize+'px';arText.textContent=a.text;const trLabel=document.createElement('div');trLabel.className='translationLabel';trLabel.textContent='ترجمة المعنى — '+translated.edition.name;const trText=document.createElement('div');trText.className='translation';trText.dir='auto';trText.textContent=t.text;card.append(head,arText,trLabel,trText);listEl.appendChild(card)})}catch(e){listEl.innerHTML='<div class="card status error">'+(e.message||'تعذر تحميل السورة والترجمة')+'</div>'}}
+languageEl.onchange=()=>{localStorage.natshaWorldLanguage=languageEl.value;fillEditions()};editionEl.onchange=()=>{currentEdition=editionEl.value;localStorage.natshaWorldEdition=currentEdition};document.getElementById('loadBtn').onclick=()=>openSurah();document.getElementById('prevBtn').onclick=()=>{if(currentSurah>1){surahEl.value=--currentSurah;openSurah(currentSurah)}};document.getElementById('nextBtn').onclick=()=>{if(currentSurah<114){surahEl.value=++currentSurah;openSurah(currentSurah)}};document.getElementById('plusBtn').onclick=()=>{fontSize=Math.min(48,fontSize+2);localStorage.natshaWorldQuranFont=fontSize;document.querySelectorAll('.arabic').forEach(x=>x.style.fontSize=fontSize+'px')};document.getElementById('minusBtn').onclick=()=>{fontSize=Math.max(22,fontSize-2);localStorage.natshaWorldQuranFont=fontSize;document.querySelectorAll('.arabic').forEach(x=>x.style.fontSize=fontSize+'px')};document.getElementById('shareBtn').onclick=async()=>{const edition=translations.find(x=>x.identifier===editionEl.value);const data={title:'القرآن بلغات العالم',text:'اقرأ القرآن الكريم مع ترجمة معانيه بلغة '+langName(languageEl.value)+(edition?' — '+edition.name:''),url:location.href};if(navigator.share)await navigator.share(data).catch(()=>{});else navigator.clipboard?.writeText(location.href)};
+loadCatalog();
+</script>
+</body>
+</html>
