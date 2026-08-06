@@ -1,0 +1,65 @@
+name: Add Notification Management System
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'family-admin.html'
+      - 'join-notifications.html'
+      - 'notifications-config.js'
+      - 'FamilyNotificationsBackend.gs'
+      - '.github/workflows/add-notification-management-system.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link admin, signup and live backend
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          anchor = '<button class="mainBtn go" data-page="tasbeeh">'
+          additions = []
+          if 'notifications.html' not in text:
+              additions.append('<button class="mainBtn" onclick="location.href=\'notifications.html\'"><span>🔔</span>إشعارات العائلة</button>')
+          if 'join-notifications.html' not in text:
+              additions.append('<button class="mainBtn" onclick="location.href=\'join-notifications.html\'"><span>📲</span>الانضمام لإشعارات واتساب</button>')
+          if 'family-admin.html' not in text:
+              additions.append('<button class="mainBtn" onclick="location.href=\'family-admin.html\'"><span>🛡️</span>دخول مشرفي المناسبات</button>')
+          if additions and anchor in text:
+              text = text.replace(anchor, ''.join(additions)+anchor, 1)
+          text = text.replace('مناسك العمرة</div></header>', 'مناسك العمرة • إشعارات العائلة</div></header>')
+          index.write_text(text, encoding='utf-8')
+
+          p = Path('notifications.html')
+          n = p.read_text(encoding='utf-8')
+          if 'join-notifications.html' not in n:
+              n = n.replace('<a class="light" href="index.html">🏠 الرئيسية</a>', '<a class="light" href="index.html">🏠 الرئيسية</a><a class="light" href="join-notifications.html">➕ الانضمام للخدمة</a><a class="light" href="family-admin.html">🛡️ دخول المشرفين</a>', 1)
+          if 'notifications-config.js' not in n:
+              n = n.replace('<script>\nconst FEED=', '<script src="notifications-config.js"></script>\n<script>\nconst CFG=window.NATSHA_NOTICE_CONFIG||{};\nconst FEED=', 1)
+          n = n.replace("const r=await fetch(FEED+'?v='+Date.now(),{cache:'no-store'});", "const source=CFG.apiUrl?(CFG.apiUrl+'?action=listAnnouncements&v='+Date.now()):(FEED+'?v='+Date.now());const r=await fetch(source,{cache:'no-store'});")
+          p.write_text(n, encoding='utf-8')
+
+          sw = Path('sw.js')
+          s = sw.read_text(encoding='utf-8')
+          s = re.sub(r"const CACHE='natsha-v\\d+'", "const CACHE='natsha-v11'", s)
+          for asset in ['notifications.html','join-notifications.html','family-admin.html','notifications-config.js']:
+              if "'"+asset+"'" not in s:
+                  s = s.replace("'manifest.json'", "'"+asset+"','manifest.json'", 1)
+          sw.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit linked notification management
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html notifications.html sw.js
+          git diff --cached --quiet || git commit -m "Link family notification admins and WhatsApp subscribers"
+          git push
