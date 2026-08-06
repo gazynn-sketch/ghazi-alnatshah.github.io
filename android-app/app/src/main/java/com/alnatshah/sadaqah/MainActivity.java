@@ -2,15 +2,19 @@ package com.alnatshah.sadaqah;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -22,12 +26,15 @@ import android.widget.ProgressBar;
 
 public class MainActivity extends Activity {
     private static final String HOME_URL = "https://gazynn-sketch.github.io/ghazi-alnatshah.github.io/";
+    private static final String PRAYER_URL = HOME_URL + "prayer.html";
     private static final int LOCATION_REQUEST = 1101;
+    private static final int NOTIFICATION_REQUEST = 1102;
 
     private WebView webView;
     private ProgressBar progressBar;
     private String pendingGeoOrigin;
     private GeolocationPermissions.Callback pendingGeoCallback;
+    private boolean waitingForExactAlarmAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +42,7 @@ public class MainActivity extends Activity {
 
         getWindow().setStatusBarColor(Color.rgb(13, 75, 57));
         getWindow().setNavigationBarColor(Color.rgb(13, 75, 57));
+        PrayerScheduleManager.createNotificationChannels(this);
 
         FrameLayout root = new FrameLayout(this);
         webView = new WebView(this);
@@ -56,10 +64,15 @@ public class MainActivity extends Activity {
 
         configureWebView();
 
-        if (savedInstanceState == null) {
-            webView.loadUrl(HOME_URL);
+        boolean openPrayer = getIntent() != null && getIntent().getBooleanExtra("openPrayer", false);
+        if (savedInstanceState == null || openPrayer) {
+            webView.loadUrl(openPrayer ? PRAYER_URL : HOME_URL);
         } else {
             webView.restoreState(savedInstanceState);
+        }
+
+        if (PrayerScheduleManager.isEnabled(this)) {
+            PrayerScheduleManager.refreshFromNetwork(this, null);
         }
     }
 
@@ -75,7 +88,9 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.2.1");
+
+        webView.addJavascriptInterface(new PrayerBridge(), "AndroidPrayer");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -96,6 +111,10 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
+                view.evaluateJavascript(
+                        "window.dispatchEvent(new CustomEvent('androidPrayerReady'));",
+                        null
+                );
             }
 
             @Override
@@ -140,6 +159,40 @@ public class MainActivity extends Activity {
         );
     }
 
+    private void requestPrayerPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    NOTIFICATION_REQUEST
+            );
+            return;
+        }
+        requestExactAlarmAccessIfNeeded();
+    }
+
+    private void requestExactAlarmAccessIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            PrayerScheduleManager.rescheduleSaved(this);
+            return;
+        }
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+            try {
+                waitingForExactAlarmAccess = true;
+                Intent intent = new Intent(
+                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        Uri.parse("package:" + getPackageName())
+                );
+                startActivity(intent);
+                return;
+            } catch (Exception ignored) {
+            }
+        }
+        PrayerScheduleManager.rescheduleSaved(this);
+    }
+
     private void openExternal(Uri uri) {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
@@ -163,6 +216,24 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.getBooleanExtra("openPrayer", false) && webView != null) {
+            webView.loadUrl(PRAYER_URL);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (waitingForExactAlarmAccess) {
+            waitingForExactAlarmAccess = false;
+            PrayerScheduleManager.rescheduleSaved(this);
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_REQUEST && pendingGeoCallback != null) {
@@ -171,6 +242,8 @@ public class MainActivity extends Activity {
             pendingGeoCallback.invoke(pendingGeoOrigin, granted, false);
             pendingGeoCallback = null;
             pendingGeoOrigin = null;
+        } else if (requestCode == NOTIFICATION_REQUEST) {
+            requestExactAlarmAccessIfNeeded();
         }
     }
 
@@ -198,5 +271,30 @@ public class MainActivity extends Activity {
             webView.destroy();
         }
         super.onDestroy();
+    }
+
+    private final class PrayerBridge {
+        @JavascriptInterface
+        public boolean isAvailable() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public boolean isEnabled() {
+            return PrayerScheduleManager.isEnabled(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void enablePrayerNotifications(String configurationJson) {
+            runOnUiThread(() -> {
+                PrayerScheduleManager.saveAndSchedule(MainActivity.this, configurationJson);
+                requestPrayerPermissions();
+            });
+        }
+
+        @JavascriptInterface
+        public void disablePrayerNotifications() {
+            runOnUiThread(() -> PrayerScheduleManager.disable(MainActivity.this));
+        }
     }
 }
