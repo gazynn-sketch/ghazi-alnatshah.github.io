@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -78,27 +79,43 @@ public class AdhanService extends Service {
 
     private void playAdhan() {
         stopPlayer();
+        AssetFileDescriptor descriptor = null;
         try {
-            player = MediaPlayer.create(this, R.raw.adhan);
-            if (player == null) {
+            descriptor = getResources().openRawResourceFd(R.raw.adhan);
+            if (descriptor == null) {
                 stopSelf();
                 return;
             }
+
+            player = new MediaPlayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 player.setAudioAttributes(new AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build());
             }
+            player.setDataSource(
+                    descriptor.getFileDescriptor(),
+                    descriptor.getStartOffset(),
+                    descriptor.getLength()
+            );
             player.setLooping(false);
             player.setOnCompletionListener(mp -> stopSelf());
             player.setOnErrorListener((mp, what, extra) -> {
                 stopSelf();
                 return true;
             });
+            player.prepare();
             player.start();
         } catch (Exception ignored) {
             stopSelf();
+        } finally {
+            if (descriptor != null) {
+                try {
+                    descriptor.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 
