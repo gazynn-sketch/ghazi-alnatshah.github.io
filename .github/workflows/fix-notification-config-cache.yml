@@ -1,0 +1,49 @@
+name: Fix Notification Config Cache
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-notification-config-cache.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add cache-busted config with hard fallback
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          api = 'https://script.google.com/macros/s/AKfycbwqY9A2JlUEXxUJrTcMegJ0Qwy1cOn9jGiKb8E9ObWdkYy6jOlfROR0Kmx9G68q8N1H/exec'
+          fallback = f'''<script src="notifications-config.js?v=20260806-5"></script>\n<script>\nwindow.NATSHA_NOTICE_CONFIG = window.NATSHA_NOTICE_CONFIG || Object.freeze({{\n  apiUrl: '{api}',\n  spreadsheetId: '1eDulzaGE3GRrfky_yq6p8yzxS45SJWl-qz5IgmKZbSE',\n  ownerEmail: 'gazynn@gmail.com',\n  whatsappEnabled: false\n}});\n</script>'''
+
+          for name in ['family-admin.html', 'join-notifications.html', 'notifications.html']:
+              p = Path(name)
+              text = p.read_text(encoding='utf-8')
+              text = text.replace('<script src="notifications-config.js"></script>', fallback)
+              text = text.replace('<script src="notifications-config.js?v=20260806-5"></script>\n<script>\nwindow.NATSHA_NOTICE_CONFIG = window.NATSHA_NOTICE_CONFIG || Object.freeze({', fallback.split('Object.freeze({',1)[0] + 'Object.freeze({', 1)
+              p.write_text(text, encoding='utf-8')
+
+          sw = Path('sw.js')
+          text = sw.read_text(encoding='utf-8')
+          import re
+          text = re.sub(r"const CACHE='natsha-v\d+'", "const CACHE='natsha-v12'", text)
+          old = "'qibla.html','natsha-family-logo.svg'"
+          new = "'qibla.html','family-admin.html','join-notifications.html','notifications.html','notifications-config.js','natsha-family-logo.svg'"
+          text = text.replace(old, new)
+          sw.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add family-admin.html join-notifications.html notifications.html sw.js
+          git diff --cached --quiet || git commit -m "Fix notification config loading and stale cache"
+          git push
