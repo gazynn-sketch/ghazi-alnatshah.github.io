@@ -8,7 +8,7 @@ on:
       - '.github/workflows/build-android-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -38,10 +38,19 @@ jobs:
         working-directory: android-app
         run: gradle :app:assembleDebug --stacktrace
 
-      - name: Prepare APK name
+      - name: Prepare APK downloads
         run: |
-          mkdir -p android-app/output
+          mkdir -p android-app/output downloads
           cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.0.0.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.0.0.apk
+
+      - name: Publish APK to website repository
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add downloads/Natsha-Family-v1.0.0.apk
+          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.0.0"
+          git push
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
