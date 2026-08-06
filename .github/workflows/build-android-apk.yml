@@ -34,6 +34,11 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
+      - name: Verify bundled adhan audio
+        run: |
+          test -s android-app/app/src/main/res/raw/adhan.ogg
+          echo 'a1fa4fd942401922c5c3301816384aae86956522  android-app/app/src/main/res/raw/adhan.ogg' | sha1sum -c -
+
       - name: Restore Play upload keystore when configured
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -60,34 +65,34 @@ jobs:
       - name: Prepare outputs
         run: |
           mkdir -p android-app/output downloads
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.0.apk
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.0.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.1.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.1.apk
           if [ -f android-app/app/build/outputs/bundle/release/app-release.aab ]; then
-            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.0-release.aab
+            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.1-release.aab
           else
-            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.0-debug.aab
+            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.1-debug.aab
           fi
 
       - name: Publish APK download
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add downloads/Natsha-Family-v1.2.0.apk
-          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.0"
+          git add downloads/Natsha-Family-v1.2.1.apk
+          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.1"
           git push
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-apk-v1.2.0
-          path: android-app/output/Natsha-Family-v1.2.0.apk
+          name: natsha-family-apk-v1.2.1
+          path: android-app/output/Natsha-Family-v1.2.1.apk
           if-no-files-found: error
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-aab-v1.2.0
+          name: natsha-family-aab-v1.2.1
           path: android-app/output/*.aab
           if-no-files-found: error
           retention-days: 30
