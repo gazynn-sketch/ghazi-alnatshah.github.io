@@ -1,0 +1,51 @@
+name: Reposition notification and admin links
+
+on:
+  push:
+    paths:
+      - '.github/workflows/reposition-notification-admin-links.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Move notification/admin links and remove project image download
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_main = """<button class=\"mainBtn\" onclick=\"location.href='join-notifications.html'\"><span>📲</span>الانضمام لإشعارات واتساب</button><button class=\"mainBtn\" onclick=\"location.href='family-admin.html'\"><span>🛡️</span>دخول مشرفي المناسبات</button>"""
+          s = s.replace(old_main, '')
+
+          old_image = """<a class=\"radioLink\" href=\"natsha-project-poster.svg\" target=\"_blank\" download>🖼️ تحميل صورة المشروع</a>"""
+          new_links = """<a class=\"radioLink\" href=\"join-notifications.html\">📲 الانضمام لإشعارات العائلة</a><a class=\"radioLink\" href=\"family-admin.html\">🛡️ دخول مشرفي المناسبات</a>"""
+
+          if old_image in s:
+              s = s.replace(old_image, new_links)
+          elif new_links not in s:
+              marker = """</div><div class=\"card dua\">"""
+              s = s.replace(marker, new_links + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+
+          sw = Path('sw.js')
+          if sw.exists():
+              t = sw.read_text(encoding='utf-8')
+              t = t.replace("const CACHE='natsha-v10'", "const CACHE='natsha-v11'")
+              sw.write_text(t, encoding='utf-8')
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git diff --cached --quiet || git commit -m "Reposition notification links and remove project image download"
+          git push
