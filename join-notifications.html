@@ -24,7 +24,15 @@
 <section class="card privacy"><b>الخصوصية:</b> تُحفظ الأرقام في جدول خاص غير ظاهر للزوار. لا تُرسل رسائل واتساب آلية إلا بعد الموافقة الصريحة وربط حساب WhatsApp Business الرسمي. لإلغاء الاشتراك، تواصل مع إدارة التطبيق أو استخدم رمز الإلغاء الذي يصلك بعد التسجيل.</section>
 <footer>إعداد وإهداء: غازي خريشة النتشة</footer>
 </main>
-<script src="notifications-config.js"></script>
+<script src="notifications-config.js?v=20260806-5"></script>
+<script>
+window.NATSHA_NOTICE_CONFIG = window.NATSHA_NOTICE_CONFIG || Object.freeze({
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwqY9A2JlUEXxUJrTcMegJ0Qwy1cOn9jGiKb8E9ObWdkYy6jOlfROR0Kmx9G68q8N1H/exec',
+  spreadsheetId: '1eDulzaGE3GRrfky_yq6p8yzxS45SJWl-qz5IgmKZbSE',
+  ownerEmail: 'gazynn@gmail.com',
+  whatsappEnabled: false
+});
+</script>
 <script>
 const cfg=window.NATSHA_NOTICE_CONFIG||{};const form=document.getElementById('joinForm'),statusEl=document.getElementById('status');
 function normalizePhone(raw,country){let p=String(raw||'').replace(/[^0-9+]/g,'');if(p.startsWith('+'))return p;if(p.startsWith('00'))return '+'+p.slice(2);p=p.replace(/^0+/,'');if(country==='other')return '+'+p;return '+'+country+p}

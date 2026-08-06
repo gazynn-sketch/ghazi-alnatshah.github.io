@@ -15,7 +15,15 @@
 <section id="admins" class="card panel"><h2>إضافة مشرفين</h2><div class="fields"><label>الاسم<input id="adminName"></label><label>البريد الإلكتروني<input id="adminEmail" type="email"></label><label>رقم الهاتف<input id="adminPhone"></label><label>الدور<select id="adminRole"><option value="editor">محرر: يجهز إعلانًا للمراجعة</option><option value="admin">مشرف: ينشر ويرسل</option><option value="owner">مالك: يدير المشرفين</option></select></label><label>PIN مؤقت<input id="adminPin" type="password" inputmode="numeric" placeholder="6 أرقام أو أكثر"></label><button id="addAdminBtn" class="btn full">إضافة المشرف</button></div><div class="top" style="margin-top:12px"><button id="loadAdminsBtn" class="btn light">تحديث قائمة المشرفين</button></div><div id="adminStatus" class="status"></div><div id="adminList" class="list"></div></section>
 <section id="settings" class="card panel"><h2>حالة الربط</h2><p id="configState" class="small"></p><p class="small">إرسال واتساب الآلي يحتاج WhatsApp Business Cloud API ورقم أعمال وقوالب رسائل معتمدة. الأرقام لا تُعرض للعامة، ولا يرسل النظام إلا للموافقين صراحةً.</p></section></section>
 <footer>إدارة تطبيق عائلة النتشة</footer></main>
-<script src="notifications-config.js"></script><script>
+<script src="notifications-config.js?v=20260806-5"></script>
+<script>
+window.NATSHA_NOTICE_CONFIG = window.NATSHA_NOTICE_CONFIG || Object.freeze({
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwqY9A2JlUEXxUJrTcMegJ0Qwy1cOn9jGiKb8E9ObWdkYy6jOlfROR0Kmx9G68q8N1H/exec',
+  spreadsheetId: '1eDulzaGE3GRrfky_yq6p8yzxS45SJWl-qz5IgmKZbSE',
+  ownerEmail: 'gazynn@gmail.com',
+  whatsappEnabled: false
+});
+</script><script>
 const cfg=window.NATSHA_NOTICE_CONFIG||{};let token=sessionStorage.getItem('natshaAdminToken')||'',me=null;
 const $=id=>document.getElementById(id);function status(id,msg,ok=false){const el=$(id);el.textContent=msg;el.className='status '+(ok?'ok':'err')}
 async function api(action,data={}){if(!cfg.apiUrl)throw new Error('لم يتم وضع رابط Google Apps Script في notifications-config.js بعد.');const payload={action,...data};if(token)payload.token=token;const r=await fetch(cfg.apiUrl,{method:'POST',body:new URLSearchParams({payload:JSON.stringify(payload)})});const j=await r.json();if(!j.ok)throw new Error(j.error||'فشل الطلب');return j}
