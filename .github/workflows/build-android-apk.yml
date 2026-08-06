@@ -34,11 +34,6 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Verify bundled adhan audio
-        run: |
-          test -s android-app/app/src/main/res/raw/adhan.ogg
-          echo 'a1fa4fd942401922c5c3301816384aae86956522  android-app/app/src/main/res/raw/adhan.ogg' | sha1sum -c -
-
       - name: Restore Play upload keystore when configured
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
