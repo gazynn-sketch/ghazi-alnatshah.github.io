@@ -31,3 +31,6 @@ jobs:
           git add android-app/app/src/main/res/raw/adhan.ogg
           git diff --cached --quiet || git commit -m 'Add CC0 adhan audio for prayer alerts'
           git push
+
+      - name: Confirm audio import
+        run: ls -lh android-app/app/src/main/res/raw/adhan.ogg
