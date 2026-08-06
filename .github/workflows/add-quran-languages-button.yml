@@ -1,0 +1,77 @@
+name: Add Quran Languages Button
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/add-quran-languages-button.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add page links and refresh cache
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+
+          text = text.replace(
+              'قرآن كريم ومصحف وتحفيظ القرآن للأطفال وأذكار',
+              'قرآن كريم ومصحف وترجمات بلغات العالم وتحفيظ القرآن للأطفال وأذكار'
+          )
+          text = text.replace(
+              'قرآن ومصحف صوتي • تحفيظ القرآن للأطفال',
+              'قرآن ومصحف صوتي • القرآن بلغات العالم • تحفيظ القرآن للأطفال'
+          )
+          text = text.replace(
+              'قرآن كريم • مصحف • تحفيظ الأطفال • أذكار',
+              'قرآن كريم • مصحف • لغات العالم • تحفيظ الأطفال • أذكار'
+          )
+
+          home_anchor = '<button class="mainBtn" onclick="location.href=\'kids-memorization.html\'"><span>🌟</span>تحفيظ القرآن للأطفال</button>'
+          world_button = '<button class="mainBtn" onclick="location.href=\'quran-languages.html\'"><span>🌍</span>القرآن بلغات العالم</button>'
+          if world_button not in text:
+              if home_anchor not in text:
+                  raise SystemExit('Home insertion point not found')
+              text = text.replace(home_anchor, home_anchor + world_button, 1)
+
+          quran_anchor = '<a class="radioLink" href="kids-memorization.html">🌟 تحفيظ القرآن للأطفال</a>'
+          world_link = '<a class="radioLink" href="quran-languages.html">🌍 القرآن بلغات العالم</a>'
+          if world_link not in text:
+              if quran_anchor not in text:
+                  raise SystemExit('Quran section insertion point not found')
+              text = text.replace(quran_anchor, quran_anchor + world_link, 1)
+
+          index.write_text(text, encoding='utf-8')
+
+          sw = Path('sw.js')
+          cache = sw.read_text(encoding='utf-8')
+          cache = re.sub(r"const CACHE='natsha-v\d+'", "const CACHE='natsha-v10'", cache)
+          if "'quran-languages.html'" not in cache:
+              anchor = "'kids-memorization.html'"
+              if anchor in cache:
+                  cache = cache.replace(anchor, anchor + ",'quran-languages.html'", 1)
+              else:
+                  cache = cache.replace("'quran-player.html'", "'quran-player.html','quran-languages.html'", 1)
+          sw.write_text(cache, encoding='utf-8')
+
+          assert 'quran-languages.html' in index.read_text(encoding='utf-8')
+          assert 'quran-languages.html' in sw.read_text(encoding='utf-8')
+          PY
+
+      - name: Commit updates
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html sw.js
+          git diff --cached --quiet || git commit -m "Add Quran translations in world languages"
+          git push
