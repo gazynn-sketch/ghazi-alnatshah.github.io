@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d4b39">
+<title>إشعارات عائلة النتشة</title>
+<style>
+:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#6d7b75;--bg:#fffaf0;--red:#9f2f29;--shadow:0 14px 38px rgba(13,75,57,.15)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 12% 6%,rgba(217,182,93,.28),transparent 25%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}
+.wrap{width:min(900px,94%);margin:auto;padding:20px 0 45px}
+header{text-align:center}.logo{width:108px;height:108px;border-radius:50%;border:4px solid var(--gold);background:#fff;box-shadow:var(--shadow)}
+h1{font-size:clamp(32px,7vw,50px);margin:12px 0 5px;color:var(--g)}.tag{font-size:18px;color:#765d24;font-weight:800;line-height:1.8}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.btn,.top a{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:14px;padding:14px 18px;font-size:17px;font-weight:900;cursor:pointer}.light{background:#e7f4ed!important;color:var(--g)!important}
+.card{background:rgba(255,255,255,.97);border:1px solid #e2d3aa;border-radius:24px;padding:20px;box-shadow:var(--shadow);margin-top:15px}.notice{text-align:center;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;line-height:1.9}.notice b{color:#f4db92}
+.filters{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.filter{border:1px solid #dec98c;background:#fff;color:var(--g);border-radius:13px;padding:12px 6px;font-weight:900;cursor:pointer}.filter.active{background:var(--g);color:#fff}
+.status{text-align:center;font-weight:900;color:var(--g);padding:18px}.list{display:grid;gap:14px}.item{border:1px solid #e2d3aa;background:#fff;border-radius:22px;padding:18px;box-shadow:0 8px 25px rgba(13,75,57,.08);position:relative;overflow:hidden}.item.important{border:2px solid #b7443a}.item.important:before{content:'عاجل';position:absolute;left:0;top:0;background:#b7443a;color:#fff;padding:7px 14px;border-bottom-right-radius:14px;font-weight:900}.head{display:flex;align-items:center;gap:12px}.icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#e7f4ed;font-size:28px;flex:none}.head h2{margin:0;color:var(--g);font-size:24px}.type{font-size:14px;color:#765d24;font-weight:900;margin-top:5px}.message{font-size:19px;line-height:1.9;margin:14px 0}.meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-weight:800}.pill{background:#f3f7f4;border-radius:999px;padding:8px 12px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.actions button,.actions a{border:0;text-decoration:none;border-radius:12px;background:var(--g);color:#fff;padding:11px 14px;font-weight:900;cursor:pointer}.actions .alt{background:#e7f4ed;color:var(--g)}
+.empty{text-align:center;font-size:19px;color:var(--muted);padding:35px}.badge{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:999px;background:#b7443a;color:#fff;padding:0 8px;font-size:14px;margin-right:5px}
+footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:25px}@media(max-width:700px){.filters{grid-template-columns:repeat(2,1fr)}.top>*{flex:1;text-align:center}.card{padding:16px}.head h2{font-size:21px}.message{font-size:18px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة"><h1>🔔 إشعارات العائلة</h1><div class="tag">وفيات وتعازٍ • أفراح ومناسبات • اجتماعات • أخبار عامة</div></header>
+<div class="top"><a class="light" href="index.html">🏠 الرئيسية</a><button class="btn" id="enableBtn">🔔 تفعيل الإشعارات</button><button class="btn light" id="refreshBtn">↻ تحديث</button></div>
+<div class="card notice"><b>مركز موحّد لأخبار عائلة النتشة</b><br>فعّل الإشعارات ليظهر لك تنبيه عند نشر خبر جديد أثناء استخدام التطبيق.</div>
+<div class="card"><div class="filters"><button class="filter active" data-type="الكل">الكل <span id="countBadge" class="badge">0</span></button><button class="filter" data-type="وفاة">🕊️ وفاة</button><button class="filter" data-type="تعزية">🤲 تعزية</button><button class="filter" data-type="مناسبة">🎉 مناسبة</button><button class="filter" data-type="عام">📢 عام</button></div></div>
+<div id="status" class="status">جاري تحميل الإشعارات...</div><section id="list" class="list"></section>
+<footer>إعداد وإهداء: غازي خريشة النتشة<br><small>اللهم ألّف بين قلوبنا واجمعنا على الخير</small></footer>
+</main>
+<script>
+const FEED='family-notifications.json';
+const listEl=document.getElementById('list'),statusEl=document.getElementById('status'),enableBtn=document.getElementById('enableBtn'),countBadge=document.getElementById('countBadge');
+let items=[],activeType='الكل';
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function isActive(n){if(!n.active)return false;if(!n.expiresAt)return true;return new Date(n.expiresAt).getTime()>Date.now()}
+function render(){const shown=items.filter(isActive).filter(n=>activeType==='الكل'||n.type===activeType);countBadge.textContent=items.filter(isActive).length;listEl.innerHTML='';statusEl.textContent='';if(!shown.length){listEl.innerHTML='<div class="card empty">لا توجد إشعارات في هذا القسم حاليًا.</div>';return}shown.forEach(n=>{const article=document.createElement('article');article.className='item'+(n.important?' important':'');const meta=[];if(n.date)meta.push('<span class="pill">📅 '+esc(n.date)+(n.time?' • '+esc(n.time):'')+'</span>');if(n.location)meta.push('<span class="pill">📍 '+esc(n.location)+'</span>');if(n.contact)meta.push('<span class="pill">☎️ '+esc(n.contact)+'</span>');article.innerHTML='<div class="head"><div class="icon">'+esc(n.icon||'🔔')+'</div><div><h2>'+esc(n.title)+'</h2><div class="type">'+esc(n.type||'عام')+'</div></div></div><div class="message">'+esc(n.message)+'</div><div class="meta">'+meta.join('')+'</div><div class="actions"><button class="shareBtn">📤 مشاركة واتساب</button>'+(n.link?'<a class="alt" href="'+esc(n.link)+'" target="_blank" rel="noopener">فتح التفاصيل</a>':'')+'</div>';
+article.querySelector('.shareBtn').onclick=()=>shareItem(n);listEl.appendChild(article)});
+}
+function shareItem(n){const parts=['*'+n.title+'*',n.message];if(n.date)parts.push('📅 '+n.date+(n.time?' - '+n.time:''));if(n.location)parts.push('📍 '+n.location);if(n.contact)parts.push('☎️ '+n.contact);if(n.link)parts.push(n.link);parts.push('عبر تطبيق عائلة النتشة');const text=parts.filter(Boolean).join('\n');const url='https://wa.me/?text='+encodeURIComponent(text);window.open(url,'_blank')}
+async function maybeNotify(newItems){const last=localStorage.natshaLastNotificationId||'';const active=newItems.filter(isActive);if(!active.length)return;const newest=active[0];if(newest.id===last)return;localStorage.natshaLastNotificationId=newest.id;if(Notification.permission==='granted'){
+  const reg=await navigator.serviceWorker?.ready.catch(()=>null);if(reg)reg.showNotification(newest.title,{body:newest.message,icon:'natsha-family-logo.svg',badge:'natsha-family-logo.svg',tag:'natsha-'+newest.id,data:{url:'notifications.html'}});else new Notification(newest.title,{body:newest.message,icon:'natsha-family-logo.svg'});
+}}
+async function load(){statusEl.textContent='جاري تحميل الإشعارات...';try{const r=await fetch(FEED+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error();const j=await r.json();items=(j.notifications||[]).sort((a,b)=>String(b.date+' '+b.time).localeCompare(String(a.date+' '+a.time)));render();maybeNotify(items)}catch(e){statusEl.textContent='تعذر تحميل الإشعارات. تحقق من الإنترنت ثم حاول مجددًا.'}}
+document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeType=b.dataset.type;render()});
+document.getElementById('refreshBtn').onclick=load;
+enableBtn.onclick=async()=>{if(!('Notification'in window)){alert('هذا الجهاز لا يدعم إشعارات المتصفح.');return}const p=await Notification.requestPermission();enableBtn.textContent=p==='granted'?'✅ الإشعارات مفعّلة':'🔕 لم يتم السماح';if(p==='granted')load()};
+if('Notification'in window&&Notification.permission==='granted')enableBtn.textContent='✅ الإشعارات مفعّلة';
+if('serviceWorker'in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data==='refresh-notifications')load()});
+load();setInterval(load,60000);
+</script>
+</body>
+</html>
