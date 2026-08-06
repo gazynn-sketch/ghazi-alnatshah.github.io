@@ -1,0 +1,78 @@
+name: Add Kids Quran Learning
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/add-kids-quran-learning.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add kids memorization links and Quran integrity checks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+
+          text = text.replace(
+              'قرآن كريم ومصحف وأذكار ومسبحة ومواقيت الصلاة واتجاه القبلة ومناسك العمرة — صدقة جارية عن أحياء وأموات عائلة النتشة',
+              'قرآن كريم ومصحف وتحفيظ القرآن للأطفال وأذكار ومسبحة ومواقيت الصلاة واتجاه القبلة ومناسك العمرة — صدقة جارية عن أحياء وأموات عائلة النتشة'
+          )
+          text = text.replace(
+              'قرآن ومصحف صوتي • أذكار شاملة • مسبحة عالمية • مواقيت الصلاة • القبلة • مناسك العمرة',
+              'قرآن ومصحف صوتي • تحفيظ القرآن للأطفال • أذكار شاملة • مسبحة عالمية • مواقيت الصلاة • القبلة • مناسك العمرة'
+          )
+          text = text.replace(
+              'قرآن كريم • مصحف • أذكار • مسبحة • مواقيت الصلاة • القبلة • مناسك العمرة',
+              'قرآن كريم • مصحف • تحفيظ الأطفال • أذكار • مسبحة • مواقيت الصلاة • القبلة • مناسك العمرة'
+          )
+
+          anchor = "<button class=\"mainBtn\" onclick=\"location.href='quran-player.html'\"><span>🎧</span>تشغيل السور واختيار القارئ</button>"
+          kids_button = "<button class=\"mainBtn\" onclick=\"location.href='kids-memorization.html'\"><span>🌟</span>تحفيظ القرآن للأطفال</button>"
+          if 'kids-memorization.html' not in text and anchor in text:
+              text = text.replace(anchor, anchor + kids_button, 1)
+
+          quran_anchor = "<a class=\"radioLink\" href=\"quran-player.html\">🎧 تشغيل سورة واختيار القارئ</a>"
+          kids_link = "<a class=\"radioLink\" href=\"kids-memorization.html\">🌟 تحفيظ القرآن للأطفال</a>"
+          if kids_link not in text and quran_anchor in text:
+              text = text.replace(quran_anchor, quran_anchor + kids_link, 1)
+
+          text = text.replace("downloads/Natsha-Family-v1.0.0.apk", "downloads/Natsha-Family-v1.1.0.apk")
+          index.write_text(text, encoding='utf-8')
+
+          mushaf = Path('mushaf.html')
+          q = mushaf.read_text(encoding='utf-8')
+          q = q.replace(
+              'النص بالرسم الإملائي الواضح مع التشكيل ليتوافق مع جميع الهواتف.',
+              'النص القرآني يُعرض كما يصل من المصدر دون تعديل يدوي، بالرسم الإملائي الواضح مع التشكيل. ويوقف التطبيق العرض إذا اختل عدد الآيات أو ترتيبها.'
+          )
+
+          fn_anchor = "function arNum(n){return Number(n).toLocaleString('ar')}"
+          validation = "function validateSurah(s){if(!s||!Array.isArray(s.ayahs)||s.ayahs.length!==Number(s.numberOfAyahs))throw new Error('توقف العرض: بيانات السورة غير مكتملة');s.ayahs.forEach((a,i)=>{if(Number(a.numberInSurah)!==i+1||typeof a.text!=='string'||!a.text.trim())throw new Error('توقف العرض: خلل في ترتيب أو نص الآيات')});return true}"
+          if validation not in q and fn_anchor in q:
+              q = q.replace(fn_anchor, fn_anchor + validation, 1)
+
+          q = q.replace('const s=j.data;currentSurah=s;', 'const s=j.data;validateSurah(s);currentSurah=s;')
+
+          old_render = "ayahsEl.innerHTML=s.ayahs.map(a=>'<span class=\"ayah\">'+a.text+' <span class=\"ayahNum\">'+arNum(a.numberInSurah)+'</span> </span>').join('')"
+          new_render = "ayahsEl.innerHTML='';s.ayahs.forEach(a=>{const outer=document.createElement('span');outer.className='ayah';outer.append(document.createTextNode(a.text+' '));const num=document.createElement('span');num.className='ayahNum';num.textContent=arNum(a.numberInSurah);outer.appendChild(num);outer.append(document.createTextNode(' '));ayahsEl.appendChild(outer)})"
+          q = q.replace(old_render, new_render)
+          mushaf.write_text(q, encoding='utf-8')
+          PY
+
+      - name: Commit page updates
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html mushaf.html
+          git diff --cached --quiet || git commit -m "Add Quran memorization for children and strengthen text integrity"
+          git push
