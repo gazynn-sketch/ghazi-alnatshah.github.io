@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and AAB
 
 on:
   workflow_dispatch:
@@ -34,28 +34,59 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Build installable debug APK
-        working-directory: android-app
-        run: gradle :app:assembleDebug --stacktrace
+      - name: Restore Play upload keystore when configured
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/natsha-upload.jks"
 
-      - name: Prepare APK downloads
+      - name: Build Android packages
+        working-directory: android-app
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/natsha-upload.jks
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          gradle :app:assembleDebug --stacktrace
+          if [ -f "$RUNNER_TEMP/natsha-upload.jks" ]; then
+            gradle :app:bundleRelease --stacktrace
+          else
+            gradle :app:bundleDebug --stacktrace
+          fi
+
+      - name: Prepare outputs
         run: |
           mkdir -p android-app/output downloads
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.1.0.apk
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.1.0.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.0.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.0.apk
+          if [ -f android-app/app/build/outputs/bundle/release/app-release.aab ]; then
+            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.0-release.aab
+          else
+            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.0-debug.aab
+          fi
 
-      - name: Publish APK to website repository
+      - name: Publish APK download
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add downloads/Natsha-Family-v1.1.0.apk
-          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.1.0"
+          git add downloads/Natsha-Family-v1.2.0.apk
+          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.0"
           git push
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-apk-v1.1.0
-          path: android-app/output/Natsha-Family-v1.1.0.apk
+          name: natsha-family-apk-v1.2.0
+          path: android-app/output/Natsha-Family-v1.2.0.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: natsha-family-aab-v1.2.0
+          path: android-app/output/*.aab
           if-no-files-found: error
           retention-days: 30
