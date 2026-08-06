@@ -1,0 +1,20 @@
+{
+  "updatedAt": "2026-08-06T13:55:00+03:00",
+  "notifications": [
+    {
+      "id": "welcome-notifications-20260806",
+      "type": "عام",
+      "icon": "🔔",
+      "title": "تمت إضافة مركز إشعارات عائلة النتشة",
+      "message": "سيتم نشر إعلانات الوفاة والتعزية والمناسبات والاجتماعات العائلية في هذا القسم.",
+      "date": "2026-08-06",
+      "time": "13:55",
+      "location": "",
+      "contact": "",
+      "link": "",
+      "important": false,
+      "active": true,
+      "expiresAt": ""
+    }
+  ]
+}
