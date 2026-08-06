@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -13,6 +12,7 @@ import android.os.IBinder;
 public class AdhanService extends Service {
     private static final String ACTION_STOP = "com.alnatshah.sadaqah.STOP_ADHAN";
     private static final int NOTIFICATION_ID = 6201;
+    private static final String ADHAN_URL = "https://upload.wikimedia.org/wikipedia/commons/b/b0/Beautiful_adhan.ogg";
 
     private MediaPlayer player;
 
@@ -79,14 +79,7 @@ public class AdhanService extends Service {
 
     private void playAdhan() {
         stopPlayer();
-        AssetFileDescriptor descriptor = null;
         try {
-            descriptor = getResources().openRawResourceFd(R.raw.adhan);
-            if (descriptor == null) {
-                stopSelf();
-                return;
-            }
-
             player = new MediaPlayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 player.setAudioAttributes(new AudioAttributes.Builder()
@@ -94,28 +87,17 @@ public class AdhanService extends Service {
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build());
             }
-            player.setDataSource(
-                    descriptor.getFileDescriptor(),
-                    descriptor.getStartOffset(),
-                    descriptor.getLength()
-            );
+            player.setDataSource(ADHAN_URL);
             player.setLooping(false);
+            player.setOnPreparedListener(MediaPlayer::start);
             player.setOnCompletionListener(mp -> stopSelf());
             player.setOnErrorListener((mp, what, extra) -> {
                 stopSelf();
                 return true;
             });
-            player.prepare();
-            player.start();
+            player.prepareAsync();
         } catch (Exception ignored) {
             stopSelf();
-        } finally {
-            if (descriptor != null) {
-                try {
-                    descriptor.close();
-                } catch (Exception ignored) {
-                }
-            }
         }
     }
 
