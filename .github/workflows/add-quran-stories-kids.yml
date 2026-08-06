@@ -1,0 +1,53 @@
+name: Add Quran stories for children
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-quran-stories-kids.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add stories button and refresh cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          button = '<button class="mainBtn" onclick="location.href=\'quran-stories-kids.html\'"><span>📖</span>قصص القرآن للأطفال</button>'
+          anchor = '<button class="mainBtn" onclick="location.href=\'kids-memorization.html\'"><span>🌟</span>تحفيظ القرآن للأطفال</button>'
+          if button not in text:
+              if anchor not in text:
+                  raise SystemExit('Anchor button not found')
+              text = text.replace(anchor, anchor + button, 1)
+          quran_link = '<a class="radioLink" href="quran-stories-kids.html">📖 قصص القرآن للأطفال</a>'
+          quran_anchor = '<a class="radioLink" href="kids-memorization.html">🌟 تحفيظ القرآن للأطفال</a>'
+          if quran_link not in text and quran_anchor in text:
+              text = text.replace(quran_anchor, quran_anchor + quran_link, 1)
+          text = text.replace('تحفيظ الأطفال • إشعارات العائلة', 'تحفيظ الأطفال • قصص القرآن للأطفال • إشعارات العائلة', 1)
+          index.write_text(text, encoding='utf-8')
+
+          sw = Path('sw.js')
+          sw_text = sw.read_text(encoding='utf-8')
+          import re
+          sw_text = re.sub(r"const CACHE='natsha-v\d+'", "const CACHE='natsha-v16'", sw_text, count=1)
+          if "'quran-stories-kids.html'" not in sw_text:
+              sw_text = sw_text.replace("'kids-memorization.html'", "'kids-memorization.html','quran-stories-kids.html'", 1)
+          sw.write_text(sw_text, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sw.js
+          git commit -m "Add Quran stories for children to app" || exit 0
+          git push
