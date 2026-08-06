@@ -4,56 +4,255 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d4b39">
-<title>الحديث الشريف | عائلة النتشة</title>
+<title>مكتبة الحديث الشريف | عائلة النتشة</title>
 <style>
-:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#6d7b75;--bg:#fffaf0;--shadow:0 14px 38px rgba(13,75,57,.15)}
+:root{--g:#0d4b39;--g2:#167054;--gold:#d9b65d;--ink:#17372d;--muted:#687770;--bg:#fffaf0;--red:#9f2f29;--shadow:0 14px 38px rgba(13,75,57,.14)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 10% 5%,rgba(217,182,93,.25),transparent 24%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}
-.wrap{width:min(950px,94%);margin:auto;padding:20px 0 45px}
-header{text-align:center}.logo{width:105px;height:105px;border-radius:50%;border:4px solid var(--gold);background:#fff;box-shadow:var(--shadow)}
-h1{font-size:clamp(31px,7vw,48px);margin:12px 0 5px;color:var(--g)}.tag{font-size:18px;color:#765d24;font-weight:800;line-height:1.8}
-.top{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.top a,.btn{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:14px;padding:13px 17px;font-size:16px;font-weight:900;cursor:pointer}.light{background:#e7f4ed!important;color:var(--g)!important}
-.card{background:#fff;border:1px solid #e2d3aa;border-radius:24px;padding:20px;box-shadow:var(--shadow);margin-top:15px}.notice{text-align:center;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;line-height:1.9}.notice b{color:#f4db92}
-.controls{display:grid;grid-template-columns:2fr 1fr;gap:12px}.controls input,.controls select{width:100%;border:2px solid #dfcf9e;border-radius:14px;padding:13px;font-size:17px;outline:none;background:#fff}
-.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}.cat{border:1px solid #dec98c;background:#fff;color:var(--g);border-radius:14px;padding:12px 7px;font-weight:900;cursor:pointer}.cat.active{background:var(--g);color:#fff}
-.status{text-align:center;font-weight:900;color:var(--g);padding:18px}.list{display:grid;gap:14px}.item{border:1px solid #e2d3aa;background:#fff;border-radius:22px;padding:18px;box-shadow:0 8px 25px rgba(13,75,57,.08)}.item h2{margin:0;color:var(--g);font-size:23px}.hadith{font-size:22px;line-height:2.05;margin:15px 0;font-weight:700}.meta{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-weight:800}.pill{background:#f3f7f4;border-radius:999px;padding:8px 12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.actions button{border:0;border-radius:12px;background:var(--g);color:#fff;padding:10px 14px;font-weight:900;cursor:pointer}.actions .alt{background:#e7f4ed;color:var(--g)}
-.empty{text-align:center;color:var(--muted);padding:35px;font-size:18px}footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:25px}
-@media(max-width:720px){.controls{grid-template-columns:1fr}.categories{grid-template-columns:repeat(2,1fr)}.card{padding:16px}.hadith{font-size:20px}}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:radial-gradient(circle at 10% 4%,rgba(217,182,93,.23),transparent 25%),linear-gradient(145deg,#fffaf0,#edf8f2);color:var(--ink);min-height:100vh}
+.wrap{width:min(1000px,94%);margin:auto;padding:20px 0 48px}
+header{text-align:center}.logo{width:104px;height:104px;border-radius:50%;border:4px solid var(--gold);background:#fff;box-shadow:var(--shadow)}
+h1{font-size:clamp(31px,7vw,49px);margin:12px 0 5px;color:var(--g)}.tag{font-size:18px;color:#765d24;font-weight:800;line-height:1.85}
+.top{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}.top a,.btn{border:0;text-decoration:none;background:var(--g);color:#fff;border-radius:14px;padding:13px 17px;font-size:16px;font-weight:900;cursor:pointer}.light{background:#e7f4ed!important;color:var(--g)!important}
+.card{background:#fff;border:1px solid #e2d3aa;border-radius:24px;padding:19px;box-shadow:var(--shadow);margin-top:15px}
+.notice{text-align:center;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;line-height:1.9}.notice b{color:#f4db92}
+.libraryHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.libraryHead h2{margin:0;color:var(--g)}.small{font-size:14px;color:var(--muted);line-height:1.75}
+.books{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.bookCard{border:1px solid #dfcf9b;background:#fff;border-radius:19px;padding:15px;text-align:right;cursor:pointer;min-height:132px;transition:.15s}.bookCard:active{transform:scale(.985)}.bookCard.active{background:#e7f4ed;border:2px solid var(--g)}.bookIcon{font-size:32px}.bookCard h3{margin:7px 0 4px;color:var(--g);font-size:20px}.bookCard p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}.kind{display:inline-block;margin-top:8px;background:#f5e7b8;color:#765d24;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:900}
+.controls{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}.controls input,.controls select{width:100%;border:2px solid #dfcf9e;border-radius:14px;padding:13px;font-size:16px;outline:none;background:#fff}.controls button{border:0;border-radius:14px;background:var(--g);color:#fff;padding:13px 17px;font-weight:900;cursor:pointer}
+.navRows{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.navRows button{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer;background:#e7f4ed;color:var(--g)}.navRows button.primary{background:var(--g);color:#fff}.navRows button:disabled{opacity:.45;cursor:not-allowed}
+.status{text-align:center;font-weight:900;color:var(--g);padding:18px;line-height:1.8}.error{color:var(--red)}
+.list{display:grid;gap:14px}.item{border:1px solid #e2d3aa;background:#fff;border-radius:22px;padding:18px;box-shadow:0 8px 25px rgba(13,75,57,.08)}.item h2{margin:0;color:var(--g);font-size:21px}.hadith{font-size:21px;line-height:2.05;margin:14px 0;font-weight:700}.meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-weight:800}.pill{background:#f3f7f4;border-radius:999px;padding:8px 11px}.grade{background:#fff1d0;color:#765d24}.warn{background:#fff5e4;border:1px solid #edcf92;border-radius:15px;padding:11px;margin-top:12px;color:#765d24;line-height:1.75;font-size:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.actions button,.actions a{border:0;text-decoration:none;border-radius:12px;background:var(--g);color:#fff;padding:10px 14px;font-weight:900;cursor:pointer}.actions .alt{background:#e7f4ed;color:var(--g)}.actions .verify{background:#fff3d5;color:#765d24}
+.empty{text-align:center;color:var(--muted);padding:34px;font-size:18px}
+footer{text-align:center;color:var(--g);font-weight:900;line-height:1.8;padding-top:26px}
+@media(max-width:760px){.books{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr}.card{padding:15px}.hadith{font-size:19px}}
+@media(max-width:430px){.books{grid-template-columns:1fr}.bookCard{min-height:auto}}
 </style>
 </head>
 <body>
 <main class="wrap">
-<header><img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة"><h1>📜 الحديث الشريف</h1><div class="tag">أحاديث صحيحة مرتبة في أقسام سهلة للقراءة والمشاركة</div></header>
-<div class="top"><a class="light" href="index.html">🏠 الرئيسية</a><button id="randomBtn" class="btn">🎲 حديث عشوائي</button><button id="sharePage" class="btn light">📤 مشاركة الصفحة</button></div>
-<div class="card notice"><b>تنبيه مهم</b><br>يُعرض الحديث مع مصدره ورقمه، ولا يُضاف حديث بلا نسبة واضحة إلى كتابه.</div>
-<div class="card"><div class="controls"><input id="search" placeholder="ابحث بكلمة من الحديث أو الراوي أو المصدر"><select id="book"><option value="all">كل الكتب</option><option value="البخاري">صحيح البخاري</option><option value="مسلم">صحيح مسلم</option><option value="الترمذي">سنن الترمذي</option><option value="أبو داود">سنن أبي داود</option><option value="النسائي">سنن النسائي</option><option value="ابن ماجه">سنن ابن ماجه</option></select></div><div class="categories" id="categories"></div></div>
-<div id="status" class="status"></div><section id="list" class="list"></section>
-<footer>إعداد وإهداء: غازي خريشة النتشة<br><small>اللهم علّمنا ما ينفعنا وانفعنا بما علّمتنا</small></footer>
+<header>
+<img class="logo" src="natsha-family-logo.svg" alt="شعار عائلة النتشة">
+<h1>📜 مكتبة الحديث الشريف</h1>
+<div class="tag">تصفّح كتب الحديث الكبرى بالأرقام، مع المصدر والباب ودرجة الحديث حين تكون متاحة</div>
+</header>
+
+<div class="top">
+<a class="light" href="index.html">🏠 الرئيسية</a>
+<button id="randomBtn" class="btn">🎲 حديث عشوائي</button>
+<button id="sharePage" class="btn light">📤 مشاركة الصفحة</button>
+</div>
+
+<div class="card notice">
+<b>تنبيه علمي مهم</b><br>
+تعرض الصفحة نص المصدر الرقمي كما هو دون تعديل يدوي. كتب السنن وغيرها تضم أحاديث بدرجات مختلفة، لذلك تُعرض الدرجة حين يذكرها المصدر، ويُنصح بالرجوع لأهل العلم عند الاستدلال والأحكام.
+</div>
+
+<section class="card">
+<div class="libraryHead">
+<h2>📚 اختر كتاب الحديث</h2>
+<div class="small">تمت إضافة عشرة كتب، والتحميل يتم عند الطلب لتخفيف استهلاك الإنترنت.</div>
+</div>
+<div id="books" class="books"></div>
+</section>
+
+<section class="card">
+<div class="controls">
+<input id="search" placeholder="ابحث داخل الأحاديث الظاهرة">
+<input id="numberInput" inputmode="numeric" pattern="[0-9]*" placeholder="رقم الحديث">
+<button id="goNumber" type="button">فتح الرقم</button>
+</div>
+<div class="navRows">
+<button id="prevBtn">السابق</button>
+<button id="nextBtn" class="primary">التالي</button>
+<button id="reloadBtn">↻ إعادة التحميل</button>
+</div>
+</section>
+
+<div id="status" class="status" aria-live="polite">اختر كتابًا لبدء القراءة.</div>
+<section id="list" class="list"></section>
+
+<footer>
+إعداد وإهداء: غازي خريشة النتشة<br>
+<small>المصدر الرقمي: Hadith API المفتوح، مع إظهار الكتاب والرقم والباب</small>
+</footer>
 </main>
+
 <script>
-const DATA=[
-{c:'الإيمان',b:'البخاري',n:'1',t:'إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى.',r:'عمر بن الخطاب رضي الله عنه'},
-{c:'الأخلاق',b:'البخاري',n:'6018',t:'من كان يؤمن بالله واليوم الآخر فليقل خيرًا أو ليصمت.',r:'أبو هريرة رضي الله عنه'},
-{c:'الرحمة',b:'الترمذي',n:'1924',t:'الراحمون يرحمهم الرحمن، ارحموا من في الأرض يرحمكم من في السماء.',r:'عبد الله بن عمرو رضي الله عنهما'},
-{c:'الصلاة',b:'مسلم',n:'82',t:'بين الرجل وبين الشرك والكفر ترك الصلاة.',r:'جابر بن عبد الله رضي الله عنه'},
-{c:'الذكر',b:'مسلم',n:'2699',t:'من سلك طريقًا يلتمس فيه علمًا سهّل الله له به طريقًا إلى الجنة.',r:'أبو هريرة رضي الله عنه'},
-{c:'الأسرة',b:'الترمذي',n:'1162',t:'خيركم خيركم لأهله، وأنا خيركم لأهلي.',r:'عائشة رضي الله عنها'},
-{c:'الصدقة',b:'مسلم',n:'2588',t:'ما نقصت صدقة من مال.',r:'أبو هريرة رضي الله عنه'},
-{c:'الصبر',b:'البخاري',n:'5641',t:'ما يصيب المسلم من نصب ولا وصب ولا هم ولا حزن ولا أذى ولا غم حتى الشوكة يشاكها إلا كفّر الله بها من خطاياه.',r:'أبو سعيد وأبو هريرة رضي الله عنهما'},
-{c:'العلم',b:'ابن ماجه',n:'224',t:'طلب العلم فريضة على كل مسلم.',r:'أنس بن مالك رضي الله عنه'},
-{c:'النية',b:'مسلم',n:'1907',t:'إن الله لا ينظر إلى صوركم وأموالكم، ولكن ينظر إلى قلوبكم وأعمالكم.',r:'أبو هريرة رضي الله عنه'},
-{c:'اللسان',b:'الترمذي',n:'2509',t:'من صمت نجا.',r:'عبد الله بن عمرو رضي الله عنهما'},
-{c:'الرفق',b:'مسلم',n:'2593',t:'إن الرفق لا يكون في شيء إلا زانه، ولا ينزع من شيء إلا شانه.',r:'عائشة رضي الله عنها'}
+const API='https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/';
+const PAGE_SIZE=8;
+const BOOKS=[
+{id:'bukhari',edition:'ara-bukhari',title:'صحيح البخاري',icon:'📗',kind:'من الكتب التسعة',max:7563,desc:'أحاديث مرتبة بحسب كتب وأبواب الصحيح.'},
+{id:'muslim',edition:'ara-muslim',title:'صحيح مسلم',icon:'📘',kind:'من الكتب التسعة',max:3033,desc:'تصفح أحاديث صحيح مسلم برقم الحديث.'},
+{id:'abudawud',edition:'ara-abudawud',title:'سنن أبي داود',icon:'📙',kind:'من الكتب التسعة',max:5274,desc:'أحاديث الأحكام والسنن مع إظهار الدرجة إن وجدت.'},
+{id:'tirmidhi',edition:'ara-tirmidhi',title:'جامع الترمذي',icon:'📕',kind:'من الكتب التسعة',max:3956,desc:'أبواب متنوعة في العبادات والآداب وغيرها.'},
+{id:'nasai',edition:'ara-nasai',title:'سنن النسائي',icon:'📓',kind:'من الكتب التسعة',max:5761,desc:'تصفح السنن حسب الرقم والباب.'},
+{id:'ibnmajah',edition:'ara-ibnmajah',title:'سنن ابن ماجه',icon:'📔',kind:'من الكتب التسعة',max:4341,desc:'مجموعة واسعة من أبواب الحديث.'},
+{id:'malik',edition:'ara-malik',title:'موطأ الإمام مالك',icon:'📒',kind:'من الكتب التسعة',max:1876,desc:'أحاديث وآثار مرتبة على أبواب الفقه.'},
+{id:'nawawi',edition:'ara-nawawi',title:'الأربعون النووية',icon:'🌿',kind:'مختارات جامعة',max:42,desc:'اثنان وأربعون حديثًا من جوامع الكلم.'},
+{id:'qudsi',edition:'ara-qudsi',title:'الأربعون القدسية',icon:'✨',kind:'أحاديث قدسية',max:40,desc:'أربعون حديثًا قدسيًا مع مصادرها.'},
+{id:'dehlawi',edition:'ara-dehlawi',title:'أربعون الدهلوي',icon:'🪶',kind:'مختارات حديثية',max:40,desc:'مجموعة مختارة من أربعين حديثًا.'}
 ];
-const cats=['الكل','الإيمان','الأخلاق','الرحمة','الصلاة','الذكر','الأسرة','الصدقة','الصبر','العلم','النية','اللسان','الرفق'];
-const list=document.getElementById('list'),status=document.getElementById('status'),search=document.getElementById('search'),book=document.getElementById('book'),categories=document.getElementById('categories');
-let active='الكل';
+
+const FALLBACK=[
+{book:'صحيح البخاري',number:1,section:'بدء الوحي',text:'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى.',grade:'صحيح'},
+{book:'صحيح مسلم',number:2699,section:'الذكر والدعاء',text:'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ.',grade:'صحيح'},
+{book:'جامع الترمذي',number:1924,section:'البر والصلة',text:'الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ، ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ.',grade:''}
+];
+
+const booksEl=document.getElementById('books');
+const listEl=document.getElementById('list');
+const statusEl=document.getElementById('status');
+const searchEl=document.getElementById('search');
+const numberInput=document.getElementById('numberInput');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
+let selected=BOOKS[0],start=1,loaded=[],requestId=0;
+
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderCats(){categories.innerHTML='';cats.forEach(c=>{const b=document.createElement('button');b.className='cat'+(c===active?' active':'');b.textContent=c;b.onclick=()=>{active=c;renderCats();render()};categories.appendChild(b)})}
-function filtered(){const q=search.value.trim().toLowerCase(),bk=book.value;return DATA.filter(x=>(active==='الكل'||x.c===active)&&(bk==='all'||x.b===bk)&&(!q||[x.t,x.r,x.b,x.c,x.n].join(' ').toLowerCase().includes(q)))}
-function render(){const rows=filtered();status.textContent='عدد الأحاديث الظاهرة: '+rows.length;list.innerHTML='';if(!rows.length){list.innerHTML='<div class="card empty">لا توجد نتائج مطابقة.</div>';return}rows.forEach(x=>{const a=document.createElement('article');a.className='item';a.innerHTML='<h2>'+esc(x.c)+'</h2><div class="hadith">«'+esc(x.t)+'»</div><div class="meta"><span class="pill">📚 '+esc(x.b)+'</span><span class="pill"># '+esc(x.n)+'</span><span class="pill">👤 '+esc(x.r)+'</span></div><div class="actions"><button>📤 مشاركة الحديث</button><button class="alt">📋 نسخ</button></div>';const text='حديث شريف\n«'+x.t+'»\n'+x.r+'\n'+x.b+' رقم '+x.n;a.querySelectorAll('button')[0].onclick=()=>navigator.share?navigator.share({title:'حديث شريف',text,url:location.href}).catch(()=>{}):navigator.clipboard.writeText(text);a.querySelectorAll('button')[1].onclick=()=>navigator.clipboard.writeText(text);list.appendChild(a)})}
-search.oninput=render;book.onchange=render;document.getElementById('randomBtn').onclick=()=>{const x=DATA[Math.floor(Math.random()*DATA.length)];search.value=x.t.slice(0,20);active='الكل';book.value='all';renderCats();render()};document.getElementById('sharePage').onclick=()=>navigator.share?navigator.share({title:'الحديث الشريف',text:'قسم الحديث الشريف في تطبيق عائلة النتشة',url:location.href}).catch(()=>{}):navigator.clipboard.writeText(location.href);
-renderCats();render();
+function digits(v){return String(v??'').replace(/[^\d]/g,'')}
+function gradeText(grades){
+ if(!Array.isArray(grades)||!grades.length)return '';
+ return grades.map(g=>typeof g==='string'?g:(g.grade||g.name||g.graded_by||g.scholar||'')).filter(Boolean).join(' • ');
+}
+function sectionText(metadata){
+ const s=metadata&&metadata.section?Object.values(metadata.section):[];
+ return s.length?String(s[0]):'';
+}
+async function fetchJson(url){
+ const r=await fetch(url,{cache:'force-cache'});
+ if(!r.ok)throw new Error('HTTP '+r.status);
+ return r.json();
+}
+async function fetchOne(book,n){
+ const base=API+book.edition+'/'+n;
+ let data;
+ try{data=await fetchJson(base+'.min.json')}catch(e){data=await fetchJson(base+'.json')}
+ const h=data&&data.hadiths&&data.hadiths[0];
+ if(!h||!h.text)throw new Error('حديث غير موجود');
+ return {
+   book:book.title,
+   bookId:book.id,
+   number:h.hadithnumber??n,
+   arabicNumber:h.arabicnumber??'',
+   text:h.text,
+   grade:gradeText(h.grades),
+   section:sectionText(data.metadata),
+   ref:h.reference||{}
+ };
+}
+function renderBooks(){
+ booksEl.innerHTML='';
+ BOOKS.forEach(b=>{
+   const el=document.createElement('button');
+   el.type='button';
+   el.className='bookCard'+(b.id===selected.id?' active':'');
+   el.innerHTML='<div class="bookIcon">'+b.icon+'</div><h3>'+esc(b.title)+'</h3><p>'+esc(b.desc)+'</p><span class="kind">'+esc(b.kind)+'</span>';
+   el.addEventListener('click',()=>{selected=b;start=1;searchEl.value='';numberInput.value='';renderBooks();loadPage()});
+   booksEl.appendChild(el);
+ });
+}
+function shareText(x){
+ return 'حديث شريف\n\n'+x.text+'\n\n📚 '+x.book+' — رقم '+x.number+(x.section?'\n📖 الباب: '+x.section:'')+(x.grade?'\n✅ الدرجة: '+x.grade:'')+'\n\nعبر تطبيق عائلة النتشة';
+}
+function render(){
+ const q=searchEl.value.trim().toLowerCase();
+ const rows=loaded.filter(x=>!q||[x.text,x.book,x.section,x.grade,x.number].join(' ').toLowerCase().includes(q));
+ listEl.innerHTML='';
+ if(!rows.length){
+   listEl.innerHTML='<div class="card empty">لا توجد نتائج مطابقة في الأحاديث المحمّلة.</div>';
+   return;
+ }
+ rows.forEach(x=>{
+   const art=document.createElement('article');
+   art.className='item';
+   const verify='https://sunnah.com/search?q='+encodeURIComponent(String(x.text).slice(0,120));
+   art.innerHTML=
+   '<h2>'+esc(x.book)+'</h2>'+ 
+   '<div class="hadith">«'+esc(x.text)+'»</div>'+ 
+   '<div class="meta">'+ 
+   '<span class="pill"># '+esc(x.number)+'</span>'+ 
+   (x.arabicNumber&&String(x.arabicNumber)!==String(x.number)?'<span class="pill">الرقم العربي: '+esc(x.arabicNumber)+'</span>':'')+ 
+   (x.section?'<span class="pill">📖 '+esc(x.section)+'</span>':'')+ 
+   (x.grade?'<span class="pill grade">✅ '+esc(x.grade)+'</span>':'')+ 
+   '</div>'+ 
+   (!x.grade&&['abudawud','tirmidhi','nasai','ibnmajah','malik','dehlawi'].includes(x.bookId)?'<div class="warn">درجة الحديث غير مذكورة في هذه النسخة الرقمية؛ تحقّق منها قبل الاستدلال.</div>':'')+ 
+   '<div class="actions"><button class="shareOne">📤 مشاركة</button><button class="alt copyOne">📋 نسخ</button><a class="verify" href="'+verify+'" target="_blank" rel="noopener">🔎 تحقق بالمصدر</a></div>';
+   const text=shareText(x);
+   art.querySelector('.shareOne').addEventListener('click',async()=>{
+     if(navigator.share)await navigator.share({title:'حديث شريف',text,url:location.href}).catch(()=>{});
+     else if(navigator.clipboard)await navigator.clipboard.writeText(text);
+   });
+   art.querySelector('.copyOne').addEventListener('click',async()=>{
+     if(navigator.clipboard)await navigator.clipboard.writeText(text);
+   });
+   listEl.appendChild(art);
+ });
+}
+async function loadPage(){
+ const mine=++requestId;
+ statusEl.className='status';
+ statusEl.textContent='جاري تحميل أحاديث '+selected.title+'...';
+ listEl.innerHTML='';
+ prevBtn.disabled=start<=1;
+ nextBtn.disabled=true;
+ const nums=Array.from({length:PAGE_SIZE},(_,i)=>start+i);
+ const results=await Promise.allSettled(nums.map(n=>fetchOne(selected,n)));
+ if(mine!==requestId)return;
+ loaded=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+ if(!loaded.length){
+   statusEl.className='status error';
+   statusEl.textContent='تعذر تحميل هذه الدفعة. تحقق من الإنترنت أو افتح رقم حديث آخر.';
+   loaded=FALLBACK.map((x,i)=>({...x,bookId:'fallback',arabicNumber:'',ref:{},number:x.number||i+1}));
+   render();
+ }else{
+   statusEl.textContent='الكتاب: '+selected.title+' — الأحاديث '+start+' إلى '+(start+PAGE_SIZE-1)+' — المحمّل: '+loaded.length;
+   render();
+ }
+ nextBtn.disabled=false;
+}
+async function openNumber(){
+ const n=Number(digits(numberInput.value));
+ if(!Number.isInteger(n)||n<1){statusEl.className='status error';statusEl.textContent='أدخل رقم حديث صحيحًا.';return}
+ if(n>selected.max){statusEl.className='status error';statusEl.textContent='الرقم أكبر من نطاق هذا الكتاب في المصدر الرقمي.';return}
+ statusEl.className='status';statusEl.textContent='جاري فتح الحديث رقم '+n+'...';listEl.innerHTML='';
+ try{
+   loaded=[await fetchOne(selected,n)];
+   start=Math.max(1,n);
+   prevBtn.disabled=start<=1;
+   nextBtn.disabled=false;
+   statusEl.textContent=selected.title+' — الحديث رقم '+n;
+   render();
+ }catch(e){
+   statusEl.className='status error';
+   statusEl.textContent='لم يُعثر على هذا الرقم في النسخة الرقمية.';
+ }
+}
+async function randomHadith(){
+ const b=BOOKS[Math.floor(Math.random()*BOOKS.length)];
+ selected=b;renderBooks();searchEl.value='';numberInput.value='';
+ statusEl.className='status';statusEl.textContent='جاري اختيار حديث عشوائي من '+b.title+'...';
+ for(let i=0;i<6;i++){
+   const n=1+Math.floor(Math.random()*b.max);
+   try{
+     loaded=[await fetchOne(b,n)];start=n;numberInput.value=n;statusEl.textContent=b.title+' — حديث عشوائي رقم '+n;render();return;
+   }catch(e){}
+ }
+ statusEl.className='status error';statusEl.textContent='تعذر اختيار حديث عشوائي الآن، حاول مرة أخرى.';
+}
+searchEl.addEventListener('input',render);
+numberInput.addEventListener('keydown',e=>{if(e.key==='Enter')openNumber()});
+document.getElementById('goNumber').addEventListener('click',openNumber);
+document.getElementById('reloadBtn').addEventListener('click',loadPage);
+prevBtn.addEventListener('click',()=>{start=Math.max(1,start-PAGE_SIZE);loadPage()});
+nextBtn.addEventListener('click',()=>{start+=PAGE_SIZE;loadPage()});
+document.getElementById('randomBtn').addEventListener('click',randomHadith);
+document.getElementById('sharePage').addEventListener('click',async()=>{
+ const data={title:'مكتبة الحديث الشريف',text:'📜 مكتبة الحديث الشريف في تطبيق عائلة النتشة — كتب متعددة مع المصدر والرقم.',url:location.href};
+ if(navigator.share)await navigator.share(data).catch(()=>{});
+ else if(navigator.clipboard)await navigator.clipboard.writeText(location.href);
+});
+renderBooks();
+loadPage();
 </script>
 </body>
 </html>
