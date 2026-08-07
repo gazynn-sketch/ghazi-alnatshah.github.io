@@ -1,1 +1,1 @@
-trigger 2026-08-07 Firebase Cloud Messaging integration
+trigger 2026-08-07 Firebase Cloud Messaging integration retry 2
