@@ -88,9 +88,10 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.2.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.2.2");
 
         webView.addJavascriptInterface(new PrayerBridge(), "AndroidPrayer");
+        webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -201,6 +202,44 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void shareWhatsAppMessage(String message) {
+        Intent send = new Intent(Intent.ACTION_SEND);
+        send.setType("text/plain");
+        send.putExtra(Intent.EXTRA_TEXT, message == null ? "" : message);
+
+        String[] packages = {"com.whatsapp", "com.whatsapp.w4b"};
+        for (String packageName : packages) {
+            send.setPackage(packageName);
+            if (send.resolveActivity(getPackageManager()) != null) {
+                try {
+                    startActivity(send);
+                    return;
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        send.setPackage(null);
+        try {
+            startActivity(Intent.createChooser(send, "مشاركة الرسالة"));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void openSmsComposer(String recipients, String message) {
+        String addresses = recipients == null ? "" : recipients
+                .replace(",", ";")
+                .replace(" ", "");
+        Intent sms = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + addresses));
+        sms.putExtra("address", addresses);
+        sms.putExtra("sms_body", message == null ? "" : message);
+        try {
+            startActivity(sms);
+        } catch (Exception ignored) {
+            openExternal(Uri.parse("sms:" + addresses));
+        }
+    }
+
     private void showOfflinePage() {
         String html = "<!doctype html><html dir='rtl' lang='ar'><head>"
                 + "<meta name='viewport' content='width=device-width,initial-scale=1'>"
@@ -271,6 +310,23 @@ public class MainActivity extends Activity {
             webView.destroy();
         }
         super.onDestroy();
+    }
+
+    private final class ShareBridge {
+        @JavascriptInterface
+        public boolean isAvailable() {
+            return true;
+        }
+
+        @JavascriptInterface
+        public void shareWhatsApp(String message) {
+            runOnUiThread(() -> shareWhatsAppMessage(message));
+        }
+
+        @JavascriptInterface
+        public void openSms(String recipients, String message) {
+            runOnUiThread(() -> openSmsComposer(recipients, message));
+        }
     }
 
     private final class PrayerBridge {
