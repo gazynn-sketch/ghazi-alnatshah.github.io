@@ -1,0 +1,77 @@
+name: Add WhatsApp channel link
+
+on:
+  push:
+    paths:
+      - '.github/channel-link-trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add channel links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          channel = "https://whatsapp.com/channel/0029VbDlslOBPzjXSTQZtm3R"
+
+          # Home page
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          anchor = "<button class=\"mainBtn\" onclick=\"location.href='join-notifications.html'\"><span>📲</span>الانضمام لإشعارات واتساب</button>"
+          added = anchor + f"<button class=\"mainBtn\" onclick=\"location.href='{channel}'\"><span>📢</span>قناة عائلة النتشة على واتساب</button>"
+          if channel not in s:
+              if anchor not in s:
+                  raise SystemExit('index anchor not found')
+              s = s.replace(anchor, added, 1)
+              p.write_text(s, encoding='utf-8')
+
+          # Notifications page
+          p = Path('notifications.html')
+          s = p.read_text(encoding='utf-8')
+          anchor = '<a class="light" href="join-notifications.html">➕ الانضمام للخدمة</a>'
+          added = anchor + f'<a class="light" href="{channel}" target="_blank" rel="noopener">📢 قناة واتساب</a>'
+          if channel not in s:
+              if anchor not in s:
+                  raise SystemExit('notifications anchor not found')
+              s = s.replace(anchor, added, 1)
+              p.write_text(s, encoding='utf-8')
+
+          # Join page
+          p = Path('join-notifications.html')
+          s = p.read_text(encoding='utf-8')
+          anchor = '<a href="notifications.html">🔔 مركز الإشعارات</a>'
+          added = anchor + f'<a href="{channel}" target="_blank" rel="noopener">📢 قناة واتساب</a>'
+          if channel not in s:
+              if anchor not in s:
+                  raise SystemExit('join anchor not found')
+              s = s.replace(anchor, added, 1)
+              p.write_text(s, encoding='utf-8')
+
+          # Android WebView: open WhatsApp channel externally.
+          p = Path('android-app/app/src/main/java/com/alnatshah/sadaqah/MainActivity.java')
+          s = p.read_text(encoding='utf-8')
+          anchor = '                String scheme = uri.getScheme();\n                if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {'
+          added = '                String scheme = uri.getScheme();\n                String host = uri.getHost();\n                if (host != null && ("whatsapp.com".equalsIgnoreCase(host) || "www.whatsapp.com".equalsIgnoreCase(host))) {\n                    openExternal(uri);\n                    return true;\n                }\n                if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {'
+          if '"whatsapp.com".equalsIgnoreCase(host)' not in s:
+              if anchor not in s:
+                  raise SystemExit('MainActivity anchor not found')
+              s = s.replace(anchor, added, 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html notifications.html join-notifications.html android-app/app/src/main/java/com/alnatshah/sadaqah/MainActivity.java
+          git commit -m "Add WhatsApp family channel links"
+          git push
