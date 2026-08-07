@@ -16,13 +16,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Finalize app and site files
+      - name: Finalize site files
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
 
-          # Add personal messaging entry to the admin toolbar and update its explanation.
           p = Path('family-admin.html')
           s = p.read_text(encoding='utf-8')
           if 'message-sender.html' not in s:
@@ -33,34 +32,21 @@ jobs:
           s = s.replace(old, new)
           p.write_text(s, encoding='utf-8')
 
-          # Make build artifact names match the new Play release.
-          p = Path('.github/workflows/build-android-apk.yml')
-          s = p.read_text(encoding='utf-8')
-          s = re.sub(r'v1\.2\.\d+', 'v1.2.2', s)
-          p.write_text(s, encoding='utf-8')
-
-          # Refresh service worker cache and include the new messaging page.
           p = Path('sw.js')
           s = p.read_text(encoding='utf-8')
           m = re.search(r"CACHE\s*=\s*['\"]natsha-v(\d+)['\"]", s)
           if m:
-              old_num = m.group(1)
-              s = s[:m.start(1)] + str(int(old_num) + 1) + s[m.end(1):]
+              s = s[:m.start(1)] + str(int(m.group(1)) + 1) + s[m.end(1):]
           if 'message-sender.html' not in s:
-              if "'family-admin.html'," in s:
-                  s = s.replace("'family-admin.html',", "'family-admin.html','message-sender.html',", 1)
-              elif '"family-admin.html",' in s:
-                  s = s.replace('"family-admin.html",', '"family-admin.html","message-sender.html",', 1)
-              else:
-                  s = s.replace("'manifest.json'", "'message-sender.html','manifest.json'", 1)
+              s = s.replace("'family-admin.html',", "'family-admin.html','message-sender.html',", 1)
           p.write_text(s, encoding='utf-8')
 
-          # Keep Play privacy disclosure aligned with local recipient storage and user-confirmed sending.
           p = Path('privacy.html')
           s = p.read_text(encoding='utf-8')
           if 'قائمة أرقام الإرسال' not in s:
               block = '''\n<h2>واتساب والرسائل النصية</h2>\n<ul>\n<li>قائمة أرقام الإرسال التي يضيفها المستخدم يدويًا تُحفظ محليًا على جهازه ولا تُرفع إلى خادم التطبيق.</li>\n<li>عند اختيار واتساب أو SMS يفتح التطبيق تطبيق المراسلة على الجهاز، ولا يتم الإرسال إلا بعد تأكيد المستخدم.</li>\n</ul>\n'''
               s = s.replace('<h2>الأطفال</h2>', block + '<h2>الأطفال</h2>')
+          s = s.replace('عند تفعيل الأذان، يستخدم التطبيق خدمة تشغيل مؤقتة في الخلفية لتشغيل الأذان، ويظهر إشعار دائم أثناء التشغيل مع زر لإيقافه.', 'عند تفعيل تنبيه الصلاة، يستخدم التطبيق خدمة تشغيل مؤقتة في الخلفية لتشغيل مقطع بداية الأذان فقط عند دخول الوقت، ويظهر إشعار أثناء التشغيل مع زر لإيقافه.')
           p.write_text(s, encoding='utf-8')
           PY
 
@@ -68,6 +54,6 @@ jobs:
         run: |
           git config user.name 'github-actions'
           git config user.email 'github-actions@github.com'
-          git add family-admin.html .github/workflows/build-android-apk.yml sw.js privacy.html
+          git add family-admin.html sw.js privacy.html
           git diff --cached --quiet || git commit -m 'Finalize v1.2.2 messaging and privacy'
           git push
