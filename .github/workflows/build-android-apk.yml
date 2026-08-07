@@ -60,34 +60,34 @@ jobs:
       - name: Prepare outputs
         run: |
           mkdir -p android-app/output downloads
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.1.apk
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.1.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.2.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.2.apk
           if [ -f android-app/app/build/outputs/bundle/release/app-release.aab ]; then
-            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.1-release.aab
+            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.2-release.aab
           else
-            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.1-debug.aab
+            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.2-debug.aab
           fi
 
       - name: Publish APK download
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add downloads/Natsha-Family-v1.2.1.apk
-          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.1"
+          git add downloads/Natsha-Family-v1.2.2.apk
+          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.2"
           git push
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-apk-v1.2.1
-          path: android-app/output/Natsha-Family-v1.2.1.apk
+          name: natsha-family-apk-v1.2.2
+          path: android-app/output/Natsha-Family-v1.2.2.apk
           if-no-files-found: error
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-aab-v1.2.1
+          name: natsha-family-aab-v1.2.2
           path: android-app/output/*.aab
           if-no-files-found: error
           retention-days: 30
