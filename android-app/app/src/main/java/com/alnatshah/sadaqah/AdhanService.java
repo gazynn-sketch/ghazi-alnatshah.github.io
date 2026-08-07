@@ -7,14 +7,18 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 public class AdhanService extends Service {
     private static final String ACTION_STOP = "com.alnatshah.sadaqah.STOP_ADHAN";
     private static final int NOTIFICATION_ID = 6201;
     private static final String ADHAN_URL = "https://upload.wikimedia.org/wikipedia/commons/b/b0/Beautiful_adhan.ogg";
+    private static final long OPENING_TAKBIR_MILLIS = 8000L;
 
     private MediaPlayer player;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -30,7 +34,7 @@ public class AdhanService extends Service {
 
         PrayerScheduleManager.createNotificationChannels(this);
         startForeground(NOTIFICATION_ID, buildNotification(prayerName, label));
-        playAdhan();
+        playOpeningTakbir();
         return START_NOT_STICKY;
     }
 
@@ -63,21 +67,21 @@ public class AdhanService extends Service {
         return builder
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("حان وقت صلاة " + prayerName)
-                .setContentText(label + " • يتم تشغيل الأذان")
-                .setStyle(new Notification.BigTextStyle().bigText(label + " • يتم تشغيل الأذان الكامل"))
+                .setContentText(label + " • الله أكبر الله أكبر")
+                .setStyle(new Notification.BigTextStyle().bigText(label + " • تنبيه بداية الأذان فقط عند دخول الوقت"))
                 .setContentIntent(openPending)
                 .setOngoing(true)
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .addAction(new Notification.Action.Builder(
                         R.drawable.ic_notification,
-                        "إيقاف الأذان",
+                        "إيقاف التنبيه",
                         stopPending
                 ).build())
                 .build();
     }
 
-    private void playAdhan() {
+    private void playOpeningTakbir() {
         stopPlayer();
         try {
             player = new MediaPlayer();
@@ -89,7 +93,12 @@ public class AdhanService extends Service {
             }
             player.setDataSource(ADHAN_URL);
             player.setLooping(false);
-            player.setOnPreparedListener(MediaPlayer::start);
+            player.setOnPreparedListener(mp -> {
+                mp.start();
+                handler.postDelayed(() -> {
+                    if (player == mp) stopSelf();
+                }, OPENING_TAKBIR_MILLIS);
+            });
             player.setOnCompletionListener(mp -> stopSelf());
             player.setOnErrorListener((mp, what, extra) -> {
                 stopSelf();
@@ -102,6 +111,7 @@ public class AdhanService extends Service {
     }
 
     private void stopPlayer() {
+        handler.removeCallbacksAndMessages(null);
         if (player != null) {
             try {
                 if (player.isPlaying()) player.stop();
