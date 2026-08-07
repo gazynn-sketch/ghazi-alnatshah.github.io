@@ -102,6 +102,11 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String scheme = uri.getScheme();
+                String host = uri.getHost();
+                if (host != null && ("whatsapp.com".equalsIgnoreCase(host) || "www.whatsapp.com".equalsIgnoreCase(host))) {
+                    openExternal(uri);
+                    return true;
+                }
                 if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
                     return false;
                 }
