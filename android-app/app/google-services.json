@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "873041084949",
+    "project_id": "natsha-family-app",
+    "storage_bucket": "natsha-family-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873041084949:android:337782a2ef6933cdfe841c",
+        "android_client_info": {
+          "package_name": "com.alnatshah.sadaqah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHyaacqMJgWqbnkPYxOqVTI2h-JHosrQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873041084949:android:e113bf7b715abc8bfe841c",
+        "android_client_info": {
+          "package_name": "com.natsha.family"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHyaacqMJgWqbnkPYxOqVTI2h-JHosrQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
