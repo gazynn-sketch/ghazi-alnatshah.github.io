@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -10,8 +11,8 @@ android {
         applicationId = "com.alnatshah.sadaqah"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.2.2"
+        versionCode = 6
+        versionName = "1.2.3"
     }
 
     val keystorePath = System.getenv("KEYSTORE_FILE")
@@ -48,4 +49,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }

@@ -27,8 +27,10 @@ import android.widget.ProgressBar;
 public class MainActivity extends Activity {
     private static final String HOME_URL = "https://gazynn-sketch.github.io/ghazi-alnatshah.github.io/";
     private static final String PRAYER_URL = HOME_URL + "prayer.html";
+    private static final String NOTIFICATIONS_URL = HOME_URL + "notifications.html";
     private static final int LOCATION_REQUEST = 1101;
     private static final int NOTIFICATION_REQUEST = 1102;
+    private static final int PUSH_NOTIFICATION_REQUEST = 1103;
 
     private WebView webView;
     private ProgressBar progressBar;
@@ -63,10 +65,13 @@ public class MainActivity extends Activity {
         setContentView(root);
 
         configureWebView();
+        requestPushNotificationPermissionIfNeeded();
 
         boolean openPrayer = getIntent() != null && getIntent().getBooleanExtra("openPrayer", false);
-        if (savedInstanceState == null || openPrayer) {
-            webView.loadUrl(openPrayer ? PRAYER_URL : HOME_URL);
+        boolean openNotifications = getIntent() != null && getIntent().getBooleanExtra("openNotifications", false);
+        if (savedInstanceState == null || openPrayer || openNotifications) {
+            String startUrl = openPrayer ? PRAYER_URL : (openNotifications ? NOTIFICATIONS_URL : HOME_URL);
+            webView.loadUrl(startUrl);
         } else {
             webView.restoreState(savedInstanceState);
         }
@@ -88,7 +93,7 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.2.2");
+        settings.setUserAgentString(settings.getUserAgentString() + " NatshaFamilyAndroid/1.2.3");
 
         webView.addJavascriptInterface(new PrayerBridge(), "AndroidPrayer");
         webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
@@ -163,6 +168,17 @@ public class MainActivity extends Activity {
         webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) ->
                 openExternal(Uri.parse(url))
         );
+    }
+
+    private void requestPushNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    PUSH_NOTIFICATION_REQUEST
+            );
+        }
     }
 
     private void requestPrayerPermissions() {
@@ -263,8 +279,12 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (intent != null && intent.getBooleanExtra("openPrayer", false) && webView != null) {
-            webView.loadUrl(PRAYER_URL);
+        if (intent != null && webView != null) {
+            if (intent.getBooleanExtra("openPrayer", false)) {
+                webView.loadUrl(PRAYER_URL);
+            } else if (intent.getBooleanExtra("openNotifications", false)) {
+                webView.loadUrl(NOTIFICATIONS_URL);
+            }
         }
     }
 
