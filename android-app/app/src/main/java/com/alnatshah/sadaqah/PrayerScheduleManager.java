@@ -37,28 +37,24 @@ public final class PrayerScheduleManager {
     }
 
     public static void createNotificationChannels(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager manager = context.getSystemService(NotificationManager.class);
-        if (manager == null) {
-            return;
-        }
+        if (manager == null) return;
 
         NotificationChannel reminders = new NotificationChannel(
                 CHANNEL_REMINDERS,
                 "تنبيهات أوقات الصلاة",
                 NotificationManager.IMPORTANCE_HIGH
         );
-        reminders.setDescription("تنبيه قبل الصلاة وعند دخول وقتها");
+        reminders.setDescription("تنبيه عند دخول وقت الصلاة فقط");
         reminders.enableVibration(true);
 
         NotificationChannel adhan = new NotificationChannel(
                 CHANNEL_ADHAN,
-                "تشغيل الأذان",
+                "بداية الأذان عند وقت الصلاة",
                 NotificationManager.IMPORTANCE_HIGH
         );
-        adhan.setDescription("تشغيل الأذان الكامل عند دخول وقت الصلاة");
+        adhan.setDescription("تشغيل مقطع البداية: الله أكبر الله أكبر عند دخول وقت الصلاة");
         adhan.setSound(null, null);
         adhan.enableVibration(false);
 
@@ -92,13 +88,9 @@ public final class PrayerScheduleManager {
     }
 
     public static void rescheduleSaved(Context context) {
-        if (!isEnabled(context)) {
-            return;
-        }
+        if (!isEnabled(context)) return;
         String config = getSavedConfiguration(context);
-        if (!config.isEmpty()) {
-            scheduleFromJson(context, config);
-        }
+        if (!config.isEmpty()) scheduleFromJson(context, config);
     }
 
     public static void refreshFromNetwork(Context context, Runnable finished) {
@@ -110,9 +102,7 @@ public final class PrayerScheduleManager {
         new Thread(() -> {
             try {
                 String saved = getSavedConfiguration(context);
-                if (saved.isEmpty()) {
-                    return;
-                }
+                if (saved.isEmpty()) return;
                 JSONObject config = new JSONObject(saved);
                 String source = config.optString("source", "city");
                 int method = config.optInt("method", 3);
@@ -142,20 +132,19 @@ public final class PrayerScheduleManager {
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(15000);
                 connection.setRequestProperty("Accept", "application/json");
-                connection.setRequestProperty("User-Agent", "NatshaFamilyAndroid/1.2.1");
+                connection.setRequestProperty("User-Agent", "NatshaFamilyAndroid/1.2.2");
 
                 if (connection.getResponseCode() == 200) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     StringBuilder body = new StringBuilder();
                     String line;
-                    while ((line = reader.readLine()) != null) {
-                        body.append(line);
-                    }
+                    while ((line = reader.readLine()) != null) body.append(line);
                     reader.close();
 
                     JSONObject response = new JSONObject(body.toString());
                     JSONObject data = response.getJSONObject("data");
                     config.put("timings", data.getJSONObject("timings"));
+                    config.put("reminderMinutes", 0);
                     config.put("lastUpdated", System.currentTimeMillis());
                     String updated = config.toString();
                     prefs(context).edit().putString(KEY_CONFIG, updated).apply();
@@ -179,35 +168,23 @@ public final class PrayerScheduleManager {
         try {
             JSONObject config = new JSONObject(json);
             JSONObject timings = config.getJSONObject("timings");
-            int reminderMinutes = Math.max(0, Math.min(60, config.optInt("reminderMinutes", 10)));
             boolean adhanEnabled = config.optBoolean("adhanEnabled", true);
             String label = config.optString("label", "الموقع المحدد");
 
             Calendar now = Calendar.getInstance();
             for (int i = 0; i < PRAYER_KEYS.length; i++) {
-                String raw = timings.optString(PRAYER_KEYS[i], "");
-                String time = cleanTime(raw);
-                if (!time.matches("\\d{1,2}:\\d{2}")) {
-                    continue;
-                }
-                String[] parts = time.split(":");
-                int hour = Integer.parseInt(parts[0]);
-                int minute = Integer.parseInt(parts[1]);
+                String time = cleanTime(timings.optString(PRAYER_KEYS[i], ""));
+                if (!time.matches("\\d{1,2}:\\d{2}")) continue;
 
+                String[] parts = time.split(":");
                 Calendar at = Calendar.getInstance();
-                at.set(Calendar.HOUR_OF_DAY, hour);
-                at.set(Calendar.MINUTE, minute);
+                at.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
+                at.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
                 at.set(Calendar.SECOND, 0);
                 at.set(Calendar.MILLISECOND, 0);
 
                 if (at.after(now)) {
                     schedulePrayerAlarm(context, i, at.getTimeInMillis(), PRAYER_NAMES[i], label, adhanEnabled);
-                    if (reminderMinutes > 0) {
-                        long reminderAt = at.getTimeInMillis() - reminderMinutes * 60_000L;
-                        if (reminderAt > System.currentTimeMillis()) {
-                            scheduleReminderAlarm(context, i, reminderAt, PRAYER_NAMES[i], reminderMinutes, label);
-                        }
-                    }
                 }
             }
             scheduleDailyRefresh(context);
@@ -239,29 +216,6 @@ public final class PrayerScheduleManager {
         setAlarm(context, triggerAt, pendingIntent);
     }
 
-    private static void scheduleReminderAlarm(
-            Context context,
-            int index,
-            long triggerAt,
-            String prayerName,
-            int minutes,
-            String label
-    ) {
-        Intent intent = new Intent(context, PrayerAlarmReceiver.class)
-                .setAction("REMINDER_" + index)
-                .putExtra("kind", "reminder")
-                .putExtra("prayerName", prayerName)
-                .putExtra("label", label)
-                .putExtra("minutes", minutes);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                2001 + index * 10,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-        setAlarm(context, triggerAt, pendingIntent);
-    }
-
     private static void scheduleDailyRefresh(Context context) {
         Calendar next = Calendar.getInstance();
         next.add(Calendar.DAY_OF_YEAR, 1);
@@ -282,9 +236,7 @@ public final class PrayerScheduleManager {
 
     private static void setAlarm(Context context, long triggerAt, PendingIntent pendingIntent) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager == null) {
-            return;
-        }
+        if (alarmManager == null) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent);
         } else {
@@ -326,6 +278,7 @@ public final class PrayerScheduleManager {
                 prayerPending.cancel();
             }
 
+            // Cancel any old v1.2.1 pre-prayer reminders that may still exist.
             Intent reminder = new Intent(context, PrayerAlarmReceiver.class).setAction("REMINDER_" + i);
             PendingIntent reminderPending = PendingIntent.getBroadcast(
                     context,
