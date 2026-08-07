@@ -22,6 +22,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add android-app index.html .github/workflows/build-android-apk.yml
+          git add android-app index.html
           git diff --cached --quiet || git commit -m "Integrate Firebase Cloud Messaging for Android"
           git push
