@@ -10,8 +10,8 @@ android {
         applicationId = "com.alnatshah.sadaqah"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.2.2"
     }
 
     val keystorePath = System.getenv("KEYSTORE_FILE")
