@@ -84,7 +84,8 @@ Last updated: 2026-08-08
 - `NatshaApplication` subscribes to topic `natsha_family_all`.
 - `NatshaMessagingService` posts high-importance Heads-up family notifications through channel `family_updates`.
 - Android 13+ notification permission is requested automatically at app startup.
-- 2026-08-08: Google Play update 1.2.3 is installed on the Android test device. Next action: first live FCM test to topic `natsha_family_all`.
+- 2026-08-08: Google Play update 1.2.3 is installed on the Android test device.
+- 2026-08-08: End-to-end FCM test succeeded from Firebase Console to topic `natsha_family_all`, using Android Notification Channel `family_updates` with sound enabled. The notification appeared on the Android device and tapping it opened the Natsha Family app/notifications page correctly. Push notifications are confirmed working.
 
 ## Google Play
 - Signed AAB for 1.2.3 / versionCode 6 was produced using the original upload key.
