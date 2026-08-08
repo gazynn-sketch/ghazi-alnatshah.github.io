@@ -7,13 +7,13 @@ Last updated: 2026-08-08
 - Default branch: `main`
 - Android package: `com.alnatshah.sadaqah`
 - Current Android version: `1.2.3` / versionCode `6`
-- Important files: `FamilyNotificationsBackend.gs`, `FamilyListImport.gs`, `android-app/*`, `index.html`, `notifications.html`, `join-notifications.html`, `family-admin.html`.
+- Important files: `FamilyNotificationsBackend.gs`, `FamilyListImport.gs`, `FirebasePushAddon.gs`, `FIREBASE_PUSH_SETUP.md`, `android-app/*`, `index.html`, `notifications.html`, `join-notifications.html`, `family-admin.html`.
 
 ## Google Sheets / Apps Script
 - Spreadsheet: **إدارة إشعارات ومناسبات عائلة النتشة**
 - Spreadsheet ID: `1eDulzaGE3GRrfky_yq6p8yzxS45SJWl-qz5IgmKZbSE`
 - Main sheets: `المشتركون`, `المشرفون`, `الإعلانات`, `سجل الإرسال`, `الإعدادات`.
-- Apps Script is the backend for subscriptions, announcements, and WhatsApp webhook handling.
+- Apps Script is the backend for subscriptions, announcements, WhatsApp webhook handling, and is the intended secure server for direct Firebase push.
 - Script Properties used include:
   - `WHATSAPP_PHONE_NUMBER_ID`
   - `WHATSAPP_ACCESS_TOKEN`
@@ -86,6 +86,23 @@ Last updated: 2026-08-08
 - Android 13+ notification permission is requested automatically at app startup.
 - 2026-08-08: Google Play update 1.2.3 is installed on the Android test device.
 - 2026-08-08: End-to-end FCM test succeeded from Firebase Console to topic `natsha_family_all`, using Android Notification Channel `family_updates` with sound enabled. The notification appeared on the Android device and tapping it opened the Natsha Family app/notifications page correctly. Push notifications are confirmed working.
+
+## Direct Firebase push from family admin — staged
+- `family-admin.html` now includes a new tab: **🔔 إشعار فوري**.
+- The panel includes title/body fields, a button to copy the current announcement title/text, and an immediate-send button.
+- The browser does not contain any Firebase secret. It calls the existing Apps Script backend action `sendPushNotification` using the current authenticated admin session.
+- The UI is intentionally disabled while `pushEnabled` is false, so it cannot fail or expose credentials before backend activation.
+- Added `FirebasePushAddon.gs` to GitHub. It sends FCM HTTP v1 server-side to topic `natsha_family_all`, channel `family_updates`, priority high, sound default, and logs success/failure to `سجل الإرسال`.
+- `sendPushNotification_` requires role `owner` or `admin`.
+- Added `FIREBASE_PUSH_SETUP.md` with the one-time activation steps.
+- Pending live Apps Script activation:
+  1. Add `FirebasePushAddon.gs` to the existing Apps Script project without replacing the current live backend.
+  2. Add router case: `case 'sendPushNotification': return json_(sendPushNotification_(body));`
+  3. Add/merge OAuth scope `https://www.googleapis.com/auth/firebase.messaging` in `appsscript.json` while preserving existing scopes.
+  4. Run `authorizeFirebasePush`, then `testFirebasePush` once and approve Google permissions.
+  5. Update the existing Web App deployment to a new version while keeping the same URL.
+  6. After successful live test, set `pushEnabled: true` in `notifications-config.js`.
+- Do NOT put Firebase service-account keys or OAuth tokens in GitHub or `family-admin.html`.
 
 ## Google Play
 - Signed AAB for 1.2.3 / versionCode 6 was produced using the original upload key.
