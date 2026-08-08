@@ -61,16 +61,15 @@ Last updated: 2026-08-08
 - `subscribeWhatsAppWaba` was executed after the update and returned HTTP 200 with `{"success":true}`.
 
 ## Templates
-- Subscription template created in Meta: `natsha_family_subscription`
-- Arabic body explains Natsha Family notifications and asks user to reply `تم` to subscribe or `انسحب` to decline/leave.
-- Quick Reply buttons: `تم`, `انسحب`.
-- Last known status: pending review; verify current approval status before mass sending.
+- Subscription template created on the real WABA as `natsha_family_subscription_v2`.
+- Arabic body explains Natsha Family notifications and uses Quick Reply buttons `تم` and `انسحب`.
+- Latest known status: pending Meta review.
 - Other configured template names:
   - `family_event_notice`
   - `family_death_notice`
 
 ## Next WhatsApp step
-1. Verify `natsha_family_subscription` is approved.
+1. Verify `natsha_family_subscription_v2` is approved.
 2. Send the invitation template to one owned test recipient.
 3. Verify replying `تم` updates the subscriber row to active/consented and returns the automatic confirmation.
 4. Verify replying `انسحب` changes the row to cancelled and returns the automatic opt-out confirmation.
@@ -83,11 +82,13 @@ Last updated: 2026-08-08
 - Correct Android package: `com.alnatshah.sadaqah`
 - Version 1.2.3 includes Firebase Cloud Messaging.
 - `NatshaApplication` subscribes to topic `natsha_family_all`.
-- `NatshaMessagingService` posts high-importance Heads-up family notifications.
+- `NatshaMessagingService` posts high-importance Heads-up family notifications through channel `family_updates`.
+- Android 13+ notification permission is requested automatically at app startup.
+- 2026-08-08: Google Play update 1.2.3 is installed on the Android test device. Next action: first live FCM test to topic `natsha_family_all`.
 
 ## Google Play
 - Signed AAB for 1.2.3 / versionCode 6 was produced using the original upload key.
-- Latest state in follow-up: uploaded to closed testing Alpha and awaiting/under Google Play review.
+- 2026-08-08: update became available and was installed on the test Android device.
 
 ## Prayer notifications
 - Implemented locally via `PrayerScheduleManager`, `PrayerAlarmReceiver`, `AdhanService`.
