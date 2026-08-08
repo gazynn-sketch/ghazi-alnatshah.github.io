@@ -8,10 +8,21 @@ This project uses Firebase Cloud Messaging HTTP v1 to send Android notifications
 - Android notification channel: `family_updates`
 - Android package: `com.alnatshah.sadaqah`
 
-## 1. Add the add-on file
+## Current status — 2026-08-08
+- `FirebasePushAddon.gs` has been added to the user's Google Apps Script project.
+- A full modified copy of the user's main backend has been prepared with the router action below added immediately after `publishAnnouncement`:
+
+```js
+case 'sendPushNotification':
+  return json_(sendPushNotification_(body));
+```
+
+- Next remaining step is the Firebase Messaging OAuth scope/authorization, then redeploy and enable the admin button.
+
+## 1. Add the add-on file — DONE
 Copy `FirebasePushAddon.gs` into the same Google Apps Script project that contains `FamilyNotificationsBackend.gs`.
 
-## 2. Add one router case
+## 2. Add one router case — PREPARED
 Inside the existing `doPost(e)` switch, add:
 
 ```js
