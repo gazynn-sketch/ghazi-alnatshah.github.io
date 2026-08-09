@@ -5,3 +5,11 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   whatsappEnabled: true,
   pushEnabled: true
 });
+
+(function(){
+  if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
+  var s=document.createElement('script');
+  s.src='whatsapp-dashboard-enhanced.js?v=20260809-1';
+  s.defer=true;
+  document.head.appendChild(s);
+})();
