@@ -102,7 +102,7 @@
 
       publishBtn.disabled=true;
       try{
-        setStatus('جاري رفع '+(isImage?'الصورة':'الفيديو')+' إلى مجلد وسائط العائلة...',true);
+        setStatus('جاري رفع '+(isImage?'الصورة':'الفيديو')+' وتجهيزها لواتساب...',true);
         var dataUrl=await fileToDataUrl(file);
         var uploaded=await largeApi('uploadAnnouncementMedia',{
           dataUrl:dataUrl,
@@ -110,7 +110,9 @@
           mimeType:file.type
         });
 
-        setStatus('تم رفع الملف. جاري حفظ الإعلان وإرسال واتساب...',true);
+        if(!uploaded.mediaId)throw new Error('تم رفع الملف لكن لم يتم إنشاء WhatsApp Media ID.');
+
+        setStatus('تم تجهيز الوسائط. جاري حفظ الإعلان وإرسال واتساب...',true);
         var data={
           type:type,
           title:title,
@@ -124,11 +126,12 @@
           publishApp:byId('publishApp').checked,
           sendWhatsApp:byId('sendWhatsApp').checked,
           mediaUrl:uploaded.url||'',
-          mediaType:uploaded.mediaType||''
+          mediaType:uploaded.mediaType||'',
+          mediaId:uploaded.mediaId||''
         };
         var j=await api('publishAnnouncement',data);
         var label=uploaded.mediaType==='image'?'صورة':'فيديو';
-        setStatus('تم حفظ الإعلان. الحالة: '+j.status+(j.sentCount!=null?' | أُرسل واتساب إلى '+j.sentCount:'')+' | القالب: '+label,true);
+        setStatus('تم حفظ الإعلان. الحالة: '+j.status+(j.sentCount!=null?' | أُرسل واتساب إلى '+j.sentCount:'')+' | الوسائط: '+label,true);
       }catch(e){
         setStatus(e&&e.message?e.message:String(e));
       }finally{
