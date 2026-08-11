@@ -8,8 +8,14 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
 
 (function(){
   if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
-  var s=document.createElement('script');
-  s.src='whatsapp-dashboard-enhanced.js?v=20260809-1';
-  s.defer=true;
-  document.head.appendChild(s);
+
+  var dashboard=document.createElement('script');
+  dashboard.src='whatsapp-dashboard-enhanced.js?v=20260809-1';
+  dashboard.defer=true;
+  document.head.appendChild(dashboard);
+
+  var media=document.createElement('script');
+  media.src='family-admin-media-addon.js?v=20260811-1';
+  media.defer=true;
+  document.head.appendChild(media);
 })();
