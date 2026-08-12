@@ -15,7 +15,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   document.head.appendChild(dashboard);
 
   var media=document.createElement('script');
-  media.src='family-admin-media-addon.js?v=20260812-1';
+  media.src='family-admin-media-addon.js?v=20260812-3';
   media.defer=true;
   document.head.appendChild(media);
 })();
