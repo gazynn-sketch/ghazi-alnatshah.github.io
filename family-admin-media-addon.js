@@ -129,7 +129,7 @@
           mediaType:uploaded.mediaType||'',
           mediaId:uploaded.mediaId||''
         };
-        var j=await api('publishAnnouncement',data);
+        var j=await largeApi('publishAnnouncement',data);
         var label=uploaded.mediaType==='image'?'صورة':'فيديو';
         setStatus('تم حفظ الإعلان. الحالة: '+j.status+(j.sentCount!=null?' | أُرسل واتساب إلى '+j.sentCount:'')+' | الوسائط: '+label,true);
       }catch(e){
