@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#79b9d4"/><stop offset="1" stop-color="#f3d7a3"/></linearGradient>
+  <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7b57d"/><stop offset="1" stop-color="#b98b51"/></linearGradient>
+</defs>
+<rect width="1080" height="1920" fill="url(#sky)"/>
+<circle cx="870" cy="250" r="85" fill="#f4d888" opacity="0.8"/>
+<path d="M0 620 Q210 520 420 610 T840 600 T1080 610 V950 H0Z" fill="#b98e62" opacity="0.55"/>
+<rect y="900" width="1080" height="1020" fill="url(#sand)"/>
+<!-- distant mud-brick houses -->
+<g fill="#b47d4d" stroke="#8d5b36" stroke-width="8">
+  <rect x="70" y="720" width="260" height="260" rx="8"/>
+  <rect x="345" y="760" width="240" height="220" rx="8"/>
+  <rect x="760" y="735" width="245" height="245" rx="8"/>
+  <rect x="600" y="800" width="150" height="180" rx="8"/>
+</g>
+<g fill="#70472f">
+  <rect x="145" y="830" width="65" height="150"/>
+  <rect x="420" y="850" width="55" height="130"/>
+  <rect x="825" y="845" width="60" height="135"/>
+  <rect x="640" y="870" width="45" height="110"/>
+</g>
+<!-- simple early mosque-inspired structure, no dome/minaret -->
+<g transform="translate(140 1020)">
+  <rect x="0" y="0" width="800" height="260" fill="#c4965d" stroke="#8d5b36" stroke-width="10"/>
+  <rect x="55" y="55" width="690" height="205" fill="#d3ad73"/>
+  <g stroke="#8d5b36" stroke-width="22"><line x1="130" y1="35" x2="130" y2="260"/><line x1="275" y1="35" x2="275" y2="260"/><line x1="420" y1="35" x2="420" y2="260"/><line x1="565" y1="35" x2="565" y2="260"/><line x1="710" y1="35" x2="710" y2="260"/></g>
+  <rect x="0" y="0" width="800" height="42" fill="#8e623d"/>
+  <g fill="#7c9a58"><rect x="30" y="-65" width="18" height="65"/><rect x="752" y="-75" width="18" height="75"/></g>
+</g>
+<!-- palms -->
+<g stroke="#7b5636" stroke-width="22" stroke-linecap="round">
+  <line x1="105" y1="690" x2="135" y2="1080"/><line x1="945" y1="680" x2="920" y2="1085"/>
+</g>
+<g fill="#477b43">
+  <path d="M135 700 C50 610 25 655 120 735 C28 700 20 760 125 770 C55 790 85 840 140 780 C165 870 220 835 160 765 C250 775 245 710 155 735 C215 660 165 625 135 700Z"/>
+  <path d="M920 690 C835 600 805 645 905 730 C810 690 805 755 905 765 C830 790 860 840 920 775 C945 865 1005 830 945 760 C1030 770 1035 705 940 730 C1000 655 950 620 920 690Z"/>
+</g>
+<!-- foreground path -->
+<path d="M390 1920 C390 1550 480 1370 540 1260 C600 1370 690 1550 690 1920Z" fill="#d9bd8e" opacity="0.72"/>
+<!-- subtle vignette -->
+<rect width="1080" height="1920" fill="none" stroke="#5f472f" stroke-width="26" opacity="0.18"/>
+</svg>
