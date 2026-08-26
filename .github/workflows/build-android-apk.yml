@@ -57,37 +57,43 @@ jobs:
             gradle :app:bundleDebug --stacktrace
           fi
 
+      - name: Verify supported AndroidX Activity SDK
+        working-directory: android-app
+        run: |
+          gradle :app:dependencyInsight --dependency androidx.activity:activity --configuration debugRuntimeClasspath | tee activity-dependency.txt
+          grep -q 'androidx.activity:activity:1.13.0' activity-dependency.txt
+
       - name: Prepare outputs
         run: |
           mkdir -p android-app/output downloads
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.3.apk
-          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.3.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk android-app/output/Natsha-Family-v1.2.4.apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk downloads/Natsha-Family-v1.2.4.apk
           if [ -f android-app/app/build/outputs/bundle/release/app-release.aab ]; then
-            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.3-release.aab
+            cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.4-release.aab
           else
-            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.3-debug.aab
+            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.4-debug.aab
           fi
 
       - name: Publish APK download
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add downloads/Natsha-Family-v1.2.3.apk
-          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.3"
+          git add downloads/Natsha-Family-v1.2.4.apk
+          git diff --cached --quiet || git commit -m "Publish Natsha Family Android APK v1.2.4"
           git push
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-apk-v1.2.3
-          path: android-app/output/Natsha-Family-v1.2.3.apk
+          name: natsha-family-apk-v1.2.4
+          path: android-app/output/Natsha-Family-v1.2.4.apk
           if-no-files-found: error
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: natsha-family-aab-v1.2.3
+          name: natsha-family-aab-v1.2.4
           path: android-app/output/*.aab
           if-no-files-found: error
           retention-days: 30

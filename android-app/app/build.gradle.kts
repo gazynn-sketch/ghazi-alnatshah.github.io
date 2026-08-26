@@ -11,8 +11,8 @@ android {
         applicationId = "com.alnatshah.sadaqah"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.2.3"
+        versionCode = 7
+        versionName = "1.2.4"
     }
 
     val keystorePath = System.getenv("KEYSTORE_FILE")
@@ -54,4 +54,5 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
     implementation("com.google.firebase:firebase-messaging")
+    implementation("androidx.activity:activity:1.13.0")
 }
