@@ -125,3 +125,15 @@ Last updated: 2026-08-08
 - Never commit secrets to GitHub.
 - Updating Script Properties alone does not require redeploying the Web App unless code/deployment itself changes.
 - Use this handover file as the first reference in future chats.
+
+
+## Google Play SDK maintenance — 2026-08-26
+- Google Play flagged `androidx.activity:activity:1.0.0` in Android version `1.2.3` / versionCode `6`.
+- The shipped 1.2.3 AAB was inspected and its embedded metadata confirmed Activity `1.0.0`.
+- The app now pins the current stable `androidx.activity:activity:1.13.0`.
+- Android version was advanced to `1.2.4` / versionCode `7`.
+- GitHub Actions run 19 built successfully and dependency verification confirmed `1.0.0 -> 1.13.0`.
+- The test APK is published at `downloads/Natsha-Family-v1.2.4.apk`.
+- GitHub does not currently have the original Play upload keystore secrets, so its AAB build is debug-only and must not be uploaded to Google Play.
+- The workflow now refuses to publish a debug AAB as a Play artifact; it uploads an AAB only when release signing secrets are configured.
+- Next Play step: use the original `natsha-upload` keystore locally in Android Studio, or configure the four GitHub Actions signing secrets, then rebuild the signed release AAB and upload versionCode 7 to Play Console.
