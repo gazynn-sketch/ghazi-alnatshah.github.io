@@ -71,7 +71,7 @@ jobs:
           if [ -f android-app/app/build/outputs/bundle/release/app-release.aab ]; then
             cp android-app/app/build/outputs/bundle/release/app-release.aab android-app/output/Natsha-Family-v1.2.4-release.aab
           else
-            cp android-app/app/build/outputs/bundle/debug/app-debug.aab android-app/output/Natsha-Family-v1.2.4-debug.aab
+            echo "::warning::Play upload AAB was not created because release signing secrets are not configured."
           fi
 
       - name: Publish APK download
@@ -90,10 +90,11 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Upload AAB artifact
+      - name: Upload signed AAB artifact
+        if: ${{ hashFiles('android-app/output/*-release.aab') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: natsha-family-aab-v1.2.4
-          path: android-app/output/*.aab
+          path: android-app/output/*-release.aab
           if-no-files-found: error
           retention-days: 30
