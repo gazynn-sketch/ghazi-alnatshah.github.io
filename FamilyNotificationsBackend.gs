@@ -36,6 +36,7 @@ function doGet(e) {
     const action = String(p.action || 'listAnnouncements');
     if (action === 'health') return json_({ok:true, service:'Natsha Family Notifications', whatsappWebhook:true});
     if (action === 'listAnnouncements') return json_({ok:true, notifications:listPublicAnnouncements_()});
+    if (action === 'listBusinessAds') return json_({ok:true, ads:listPublicBusinessAds_()});
     return json_({ok:false, error:'إجراء غير معروف'});
   } catch (err) {
     return json_({ok:false, error:safeError_(err)});
@@ -65,6 +66,9 @@ function doPost(e) {
       case 'listAdmins': return json_(listAdmins_(body));
       case 'addAdmin': return json_(addAdmin_(body));
       case 'deactivateAdmin': return json_(deactivateAdmin_(body));
+      case 'loginBusinessAds': return json_(loginBusinessAds_(body));
+      case 'businessAdsSession': return json_(businessAdsSession_(body));
+      case 'publishBusinessAd': return json_(publishBusinessAd_(body));
       default: return json_({ok:false, error:'الإجراء غير مدعوم'});
     }
   } catch (err) {
