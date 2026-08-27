@@ -59,7 +59,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
   var reviewsFix=document.createElement('script');
-  reviewsFix.src='business-reviews-fix.js?v=20260827-1';
+  reviewsFix.src='business-reviews-fix.js?v=20260827-2';
   reviewsFix.defer=true;
   document.head.appendChild(reviewsFix);
 })();
@@ -69,10 +69,12 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   - صاحب أكبر عدد تقييمات يظهر أولاً.
   - عند تساوي العدد، الأعلى في متوسط النجوم يظهر أولاً.
   - الإعلانات بلا تقييمات تبقى في النهاية.
+  مهم: لا نحرّك عناصر DOM إذا كانت مرتبة بالفعل، حتى لا يفقد input/select التركيز على iPhone/Safari.
 */
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
   var sorting=false;
+  var observer=null;
 
   function ratingData(card){
     var summary=card.querySelector('.reviewsPanel summary');
@@ -89,26 +91,42 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
     if(sorting)return;
     var list=document.getElementById('adsList');
     if(!list)return;
-    var cards=[].slice.call(list.querySelectorAll(':scope > .ad'));
-    if(cards.length<2)return;
-    sorting=true;
-    cards.forEach(function(card,index){ if(card.__natshaOriginalOrder==null)card.__natshaOriginalOrder=index; });
-    cards.sort(function(a,b){
+    var current=[].slice.call(list.querySelectorAll(':scope > .ad'));
+    if(current.length<2)return;
+
+    current.forEach(function(card,index){
+      if(card.__natshaOriginalOrder==null)card.__natshaOriginalOrder=index;
+    });
+
+    var wanted=current.slice().sort(function(a,b){
       var ra=ratingData(a), rb=ratingData(b);
       if(rb.count!==ra.count)return rb.count-ra.count;
       if(rb.avg!==ra.avg)return rb.avg-ra.avg;
       return a.__natshaOriginalOrder-b.__natshaOriginalOrder;
     });
-    cards.forEach(function(card){ list.appendChild(card); });
+
+    var changed=wanted.some(function(card,index){return card!==current[index];});
+    if(!changed)return;
+
+    sorting=true;
+    if(observer)observer.disconnect();
+    var frag=document.createDocumentFragment();
+    wanted.forEach(function(card){frag.appendChild(card);});
+    list.appendChild(frag);
+    if(observer)observer.observe(list,{childList:true,subtree:true,characterData:true});
     sorting=false;
   }
 
   function install(){
     var list=document.getElementById('adsList');
     if(!list)return setTimeout(install,150);
-    var observer=new MutationObserver(function(){ setTimeout(sortCards,0); });
+    observer=new MutationObserver(function(){
+      if(sorting)return;
+      clearTimeout(list.__natshaSortTimer);
+      list.__natshaSortTimer=setTimeout(sortCards,80);
+    });
     observer.observe(list,{childList:true,subtree:true,characterData:true});
-    sortCards();
+    setTimeout(sortCards,0);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
