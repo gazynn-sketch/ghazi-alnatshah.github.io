@@ -1,0 +1,61 @@
+name: Combine adhkar section
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/combine-adhkar-section.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  combine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Combine adhkar entries
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_nav = '<nav class="nav"><button class="active" data-page="home">الرئيسية</button><button data-page="quran">القرآن الكريم</button><button data-page="tasbeeh">المسبحة</button><button data-page="adhkar">الأذكار</button></nav>'
+          new_nav = '<nav class="nav"><button class="active" data-page="home">الرئيسية</button><button data-page="quran">القرآن الكريم</button><button data-page="adhkar">الأذكار</button></nav>'
+          if old_nav in s:
+              s = s.replace(old_nav, new_nav, 1)
+
+          old_buttons = '<button class="mainBtn go" data-page="tasbeeh"><span>📿</span>ابدأ التسبيح</button><button class="mainBtn go" data-page="adhkar" data-mode="morning"><span>🌅</span>أذكار الصباح</button><button class="mainBtn go" data-page="adhkar" data-mode="evening"><span>🌙</span>أذكار المساء</button><button class="mainBtn go" data-page="adhkar" data-mode="sleep"><span>😴</span>أذكار النوم</button><button class="mainBtn go" data-page="adhkar" data-mode="afterPrayer"><span>🕌</span>أذكار بعد الصلاة</button>'
+          new_buttons = '<button class="mainBtn go" data-page="adhkar"><span>📿</span>الأذكار</button>'
+          if old_buttons not in s:
+              raise SystemExit('Target adhkar buttons not found; index.html was not changed')
+          s = s.replace(old_buttons, new_buttons, 1)
+
+          old_adhkar = '<section id="adhkar" class="page"><div class="card"><h2 class="adhkarTitle" id="adhkarTitle">أذكار الصباح</h2><div class="adhkarModes">'
+          new_adhkar = '<section id="adhkar" class="page"><div class="card"><h2 class="adhkarTitle" id="adhkarTitle">الأذكار</h2><div class="adhkarModes"><button class="choice go" data-page="tasbeeh">📿 المسبحة والتسبيح</button>'
+          if old_adhkar not in s:
+              raise SystemExit('Adhkar section header not found')
+          s = s.replace(old_adhkar, new_adhkar, 1)
+
+          old_tasbeeh = '<section id="tasbeeh" class="page">\n<div class="card"'
+          new_tasbeeh = '<section id="tasbeeh" class="page">\n<div style="margin:0 0 12px"><button class="modeBtn go" data-page="adhkar">↩️ العودة إلى الأذكار</button></div>\n<div class="card"'
+          if old_tasbeeh in s:
+              s = s.replace(old_tasbeeh, new_tasbeeh, 1)
+
+          s = s.replace('.nav{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);', '.nav{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(3,1fr);', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Group tasbeeh and adhkar under one adhkar section'
+          git push
