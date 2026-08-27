@@ -69,6 +69,7 @@ function doPost(e) {
       case 'loginBusinessAds': return json_(loginBusinessAds_(body));
       case 'businessAdsSession': return json_(businessAdsSession_(body));
       case 'publishBusinessAd': return json_(publishBusinessAd_(body));
+      case 'addBusinessAdReview': return json_(addBusinessAdReview_(body));
       default: return json_({ok:false, error:'الإجراء غير مدعوم'});
     }
   } catch (err) {
