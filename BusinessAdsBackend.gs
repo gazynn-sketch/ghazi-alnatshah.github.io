@@ -27,7 +27,13 @@ function loginBusinessAds_(body) {
   return {ok:true,token:token,expiresIn:BUSINESS_ADS.sessionSeconds};
 }
 
-function businessAdsSession_(body) { requireBusinessAdsSession_(body&&body.businessToken); return {ok:true}; }
+function businessAdsSession_(body) {
+  body=body||{};
+  if(body.adminAction==='update') return updateBusinessAdAdmin_(body);
+  if(body.adminAction==='delete') return deleteBusinessAdAdmin_(body);
+  requireBusinessAdsSession_(body.businessToken);
+  return {ok:true};
+}
 function requireBusinessAdsSession_(token) {
   const raw=CacheService.getScriptCache().get(BUSINESS_ADS.sessionPrefix+clean_(token,200));
   if(!raw) throw new Error('انتهت جلسة الدخول؛ أدخل كلمة المرور من جديد');
@@ -63,6 +69,39 @@ function publishBusinessAd_(body) {
   const row={'ID':id,'اسم النشاط':businessName,'صاحب النشاط':ownerName,'التصنيف':category,'المدينة':city,'رقم الهاتف':phone,'رقم واتساب':whatsapp,'الوصف':description,'رابط الصفحة':website,'رابط الموقع على الخريطة':locationUrl,'الوسائط':JSON.stringify(media),'تاريخ الانتهاء':expiresAt,'الحالة':'منشور','وقت الإنشاء':now_(),'آخر تحديث':now_()};
   const lock=LockService.getScriptLock();lock.waitLock(10000);try{appendByHeaders_(ensureBusinessAdsSheet_(),row)}finally{lock.releaseLock()}
   return {ok:true,id:id,businessName:businessName,status:'منشور'};
+}
+
+function findBusinessAd_(adId) {
+  const id=clean_(adId,80);
+  if(!id) throw new Error('معرّف الإعلان مفقود');
+  const sheet=ensureBusinessAdsSheet_();
+  const rec=rows_(sheet).find(r=>String(r['ID'])===id);
+  if(!rec) throw new Error('الإعلان غير موجود');
+  return {sheet:sheet,rec:rec};
+}
+
+function updateBusinessAdAdmin_(body) {
+  const admin=requireRole_(body.token,['owner','admin','editor']);
+  const found=findBusinessAd_(body.adId),rec=found.rec;
+  if(String(rec['الحالة'])!=='منشور') throw new Error('لا يمكن تعديل إعلان محذوف');
+  const businessName=clean_(body.businessName,100),ownerName=clean_(body.ownerName,80),category=clean_(body.category,60),city=clean_(body.city,80);
+  const phone=clean_(body.phone,30),whatsapp=clean_(body.whatsapp||body.phone,30),description=clean_(body.description,1200),website=safeBusinessUrl_(body.website),locationUrl=safeBusinessUrl_(body.locationUrl),expiresAt=clean_(body.expiresAt,20);
+  if(!businessName||!ownerName||!category||!phone||!description) throw new Error('أكمل بيانات الإعلان المطلوبة');
+  if(!/^[0-9+()\-\s]{7,30}$/.test(phone)) throw new Error('رقم الهاتف غير صحيح');
+  if(whatsapp&&!/^[0-9+()\-\s]{7,30}$/.test(whatsapp)) throw new Error('رقم واتساب غير صحيح');
+  updateRowByHeaders_(found.sheet,rec._row,{
+    'اسم النشاط':businessName,'صاحب النشاط':ownerName,'التصنيف':category,'المدينة':city,'رقم الهاتف':phone,'رقم واتساب':whatsapp,
+    'الوصف':description,'رابط الصفحة':website,'رابط الموقع على الخريطة':locationUrl,'تاريخ الانتهاء':expiresAt,'آخر تحديث':now_()
+  });
+  return {ok:true,id:body.adId,businessName:businessName,updatedBy:admin.email};
+}
+
+function deleteBusinessAdAdmin_(body) {
+  const admin=requireRole_(body.token,['owner','admin']);
+  const found=findBusinessAd_(body.adId),rec=found.rec;
+  if(String(rec['الحالة'])==='محذوف') return {ok:true,id:body.adId,alreadyDeleted:true};
+  updateRowByHeaders_(found.sheet,rec._row,{'الحالة':'محذوف','آخر تحديث':now_()});
+  return {ok:true,id:body.adId,deletedBy:admin.email};
 }
 
 function addBusinessAdReview_(body) {
@@ -108,7 +147,7 @@ function saveBusinessAdsMedia_(items,businessName) {
   });
   if(videoCount>1||(videoCount&&prepared.length>1))throw new Error('يسمح بفيديو واحد فقط ومن دون صور إضافية');if(total>BUSINESS_ADS.maxTotalBytes)throw new Error('إجمالي الملفات أكبر من 15 MB');if(!prepared.length)return [];
   const folder=getBusinessAdsFolder_();
-  return prepared.map(item=>{const file=folder.createFile(Utilities.newBlob(item.bytes,item.mime,clean_(businessName,40)+'-'+item.fileName));file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);const id=file.getId();return {type:item.isVideo?'video':'image',url:'https://drive.google.com/uc?export=view&id='+encodeURIComponent(id),fileId:id}});
+  return prepared.map(item=>{const file=folder.createFile(Utilities.newBlob(item.bytes,item.mime,clean_(businessName,40)+'-'+item.fileName));file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);const id=file.getId();return {type:item.isVideo?'video':'image',url:'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1600',fileId:id}});
 }
 
 function getBusinessAdsFolder_() {
