@@ -1,6 +1,6 @@
 /* Natsha Family — commercial ads backend. See BUSINESS_ADS_SETUP.md. */
 const BUSINESS_ADS = Object.freeze({
-  sheet:'الإعلانات التجارية', passwordHashProperty:'BUSINESS_ADS_PASSWORD_SHA256',
+  sheet:'الإعلانات التجارية', reviewsSheet:'تفاعلات الإعلانات', passwordHashProperty:'BUSINESS_ADS_PASSWORD_SHA256',
   initialPasswordProperty:'BUSINESS_ADS_INITIAL_PASSWORD', folderIdProperty:'BUSINESS_ADS_FOLDER_ID',
   sessionPrefix:'business-session:', sessionSeconds:21600, maxFiles:3,
   maxImageBytes:5*1024*1024, maxVideoBytes:12*1024*1024, maxTotalBytes:15*1024*1024
@@ -13,6 +13,7 @@ function setInitialBusinessAdsPassword() {
   props.setProperty(BUSINESS_ADS.passwordHashProperty,sha256_(password));
   props.deleteProperty(BUSINESS_ADS.initialPasswordProperty);
   ensureBusinessAdsSheet_();
+  ensureBusinessAdsReviewsSheet_();
   return 'تم حفظ كلمة المرور مشفّرة وحذف القيمة المؤقتة.';
 }
 
@@ -42,6 +43,15 @@ function ensureBusinessAdsSheet_() {
   return sheet;
 }
 
+function ensureBusinessAdsReviewsSheet_() {
+  const db=db_(); let sheet=db.getSheetByName(BUSINESS_ADS.reviewsSheet);
+  const headers=['ID','معرّف الإعلان','اسم المعلّق','التقييم','التعليق','الحالة','وقت الإنشاء'];
+  if(!sheet){sheet=db.insertSheet(BUSINESS_ADS.reviewsSheet);sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
+  else if(sheet.getLastColumn()===0){sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
+  else {const current=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(String);const missing=headers.filter(h=>current.indexOf(h)<0);if(missing.length)sheet.getRange(1,sheet.getLastColumn()+1,1,missing.length).setValues([missing])}
+  return sheet;
+}
+
 function publishBusinessAd_(body) {
   requireBusinessAdsSession_(body&&body.businessToken);
   const businessName=clean_(body.businessName,100),ownerName=clean_(body.ownerName,80),category=clean_(body.category,60),city=clean_(body.city,80);
@@ -55,11 +65,33 @@ function publishBusinessAd_(body) {
   return {ok:true,id:id,businessName:businessName,status:'منشور'};
 }
 
+function addBusinessAdReview_(body) {
+  const adId=clean_(body&&body.adId,80),name=clean_(body&&body.name,80),comment=clean_(body&&body.comment,500),rating=Number(body&&body.rating);
+  if(!adId||name.length<2) throw new Error('اكتب اسمك لإضافة التقييم');
+  if(!Number.isInteger(rating)||rating<1||rating>5) throw new Error('اختر تقييمًا من نجمة إلى 5 نجوم');
+  const throttleKey='business-review:'+sha256_(adId+'|'+name.toLowerCase());
+  if(CacheService.getScriptCache().get(throttleKey)) throw new Error('تم إرسال تقييمك؛ انتظر قليلًا قبل إضافة تقييم آخر');
+  const exists=rows_(ensureBusinessAdsSheet_()).some(r=>String(r['ID'])===adId&&String(r['الحالة'])==='منشور');
+  if(!exists) throw new Error('الإعلان غير موجود أو غير متاح');
+  const row={'ID':uid_('REV'),'معرّف الإعلان':adId,'اسم المعلّق':name,'التقييم':rating,'التعليق':comment,'الحالة':'منشور','وقت الإنشاء':now_()};
+  const lock=LockService.getScriptLock();lock.waitLock(10000);try{appendByHeaders_(ensureBusinessAdsReviewsSheet_(),row)}finally{lock.releaseLock()}
+  CacheService.getScriptCache().put(throttleKey,'1',60);
+  return {ok:true,rating:rating,name:name};
+}
+
 function listPublicBusinessAds_() {
   const today=Utilities.formatDate(new Date(),'Asia/Amman','yyyy-MM-dd');
+  const grouped={};
+  rows_(ensureBusinessAdsReviewsSheet_()).filter(r=>String(r['الحالة'])==='منشور').forEach(r=>{
+    const adId=String(r['معرّف الإعلان']||''),rating=Number(r['التقييم']);if(!adId||rating<1||rating>5)return;
+    const group=grouped[adId]||(grouped[adId]={sum:0,count:0,reviews:[]});group.sum+=rating;group.count++;
+    group.reviews.push({id:r['ID'],name:r['اسم المعلّق'],rating:rating,comment:r['التعليق'],createdAt:r['وقت الإنشاء']});
+  });
   return rows_(ensureBusinessAdsSheet_()).filter(r=>{const expiry=clean_(r['تاريخ الانتهاء'],20);return String(r['الحالة'])==='منشور'&&(!expiry||expiry>=today)}).map(r=>{
     let media=[];try{media=JSON.parse(String(r['الوسائط']||'[]'))}catch(ignore){}
-    return {id:r['ID'],businessName:r['اسم النشاط'],ownerName:r['صاحب النشاط'],category:r['التصنيف'],city:r['المدينة'],phone:r['رقم الهاتف'],whatsapp:r['رقم واتساب'],description:r['الوصف'],website:r['رابط الصفحة'],locationUrl:r['رابط الموقع على الخريطة'],media:Array.isArray(media)?media:[],expiresAt:r['تاريخ الانتهاء'],createdAt:r['وقت الإنشاء']};
+    const group=grouped[String(r['ID'])]||{sum:0,count:0,reviews:[]};
+    const reviews=group.reviews.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,20);
+    return {id:r['ID'],businessName:r['اسم النشاط'],ownerName:r['صاحب النشاط'],category:r['التصنيف'],city:r['المدينة'],phone:r['رقم الهاتف'],whatsapp:r['رقم واتساب'],description:r['الوصف'],website:r['رابط الصفحة'],locationUrl:r['رابط الموقع على الخريطة'],media:Array.isArray(media)?media:[],averageRating:group.count?Number((group.sum/group.count).toFixed(1)):0,ratingCount:group.count,reviews:reviews,expiresAt:r['تاريخ الانتهاء'],createdAt:r['وقت الإنشاء']};
   }).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 
