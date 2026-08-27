@@ -55,6 +55,15 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   };
 })();
 
+/* Public ratings/comments must not depend on a business-ad login session. */
+(function(){
+  if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
+  var reviewsFix=document.createElement('script');
+  reviewsFix.src='business-reviews-fix.js?v=20260827-1';
+  reviewsFix.defer=true;
+  document.head.appendChild(reviewsFix);
+})();
+
 /*
   ترتيب إعلانات الأعمال حسب عدد التقييمات:
   - صاحب أكبر عدد تقييمات يظهر أولاً.
