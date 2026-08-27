@@ -35,7 +35,7 @@ function requireBusinessAdsSession_(token) {
 
 function ensureBusinessAdsSheet_() {
   const db=db_(); let sheet=db.getSheetByName(BUSINESS_ADS.sheet);
-  const headers=['ID','اسم النشاط','صاحب النشاط','التصنيف','المدينة','رقم الهاتف','رقم واتساب','الوصف','رابط الصفحة','الوسائط','تاريخ الانتهاء','الحالة','وقت الإنشاء','آخر تحديث'];
+  const headers=['ID','اسم النشاط','صاحب النشاط','التصنيف','المدينة','رقم الهاتف','رقم واتساب','الوصف','رابط الصفحة','رابط الموقع على الخريطة','الوسائط','تاريخ الانتهاء','الحالة','وقت الإنشاء','آخر تحديث'];
   if(!sheet){sheet=db.insertSheet(BUSINESS_ADS.sheet);sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
   else if(sheet.getLastColumn()===0){sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
   else {const current=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(String);const missing=headers.filter(h=>current.indexOf(h)<0);if(missing.length)sheet.getRange(1,sheet.getLastColumn()+1,1,missing.length).setValues([missing])}
@@ -45,12 +45,12 @@ function ensureBusinessAdsSheet_() {
 function publishBusinessAd_(body) {
   requireBusinessAdsSession_(body&&body.businessToken);
   const businessName=clean_(body.businessName,100),ownerName=clean_(body.ownerName,80),category=clean_(body.category,60),city=clean_(body.city,80);
-  const phone=clean_(body.phone,30),whatsapp=clean_(body.whatsapp||body.phone,30),description=clean_(body.description,1200),website=safeBusinessUrl_(body.website),expiresAt=clean_(body.expiresAt,20);
+  const phone=clean_(body.phone,30),whatsapp=clean_(body.whatsapp||body.phone,30),description=clean_(body.description,1200),website=safeBusinessUrl_(body.website),locationUrl=safeBusinessUrl_(body.locationUrl),expiresAt=clean_(body.expiresAt,20);
   if(!businessName||!ownerName||!category||!phone||!description) throw new Error('أكمل بيانات الإعلان المطلوبة');
   if(!/^[0-9+()\-\s]{7,30}$/.test(phone)) throw new Error('رقم الهاتف غير صحيح');
   if(whatsapp&&!/^[0-9+()\-\s]{7,30}$/.test(whatsapp)) throw new Error('رقم واتساب غير صحيح');
   const media=saveBusinessAdsMedia_(body.media||[],businessName),id=uid_('BIZ');
-  const row={'ID':id,'اسم النشاط':businessName,'صاحب النشاط':ownerName,'التصنيف':category,'المدينة':city,'رقم الهاتف':phone,'رقم واتساب':whatsapp,'الوصف':description,'رابط الصفحة':website,'الوسائط':JSON.stringify(media),'تاريخ الانتهاء':expiresAt,'الحالة':'منشور','وقت الإنشاء':now_(),'آخر تحديث':now_()};
+  const row={'ID':id,'اسم النشاط':businessName,'صاحب النشاط':ownerName,'التصنيف':category,'المدينة':city,'رقم الهاتف':phone,'رقم واتساب':whatsapp,'الوصف':description,'رابط الصفحة':website,'رابط الموقع على الخريطة':locationUrl,'الوسائط':JSON.stringify(media),'تاريخ الانتهاء':expiresAt,'الحالة':'منشور','وقت الإنشاء':now_(),'آخر تحديث':now_()};
   const lock=LockService.getScriptLock();lock.waitLock(10000);try{appendByHeaders_(ensureBusinessAdsSheet_(),row)}finally{lock.releaseLock()}
   return {ok:true,id:id,businessName:businessName,status:'منشور'};
 }
@@ -59,7 +59,7 @@ function listPublicBusinessAds_() {
   const today=Utilities.formatDate(new Date(),'Asia/Amman','yyyy-MM-dd');
   return rows_(ensureBusinessAdsSheet_()).filter(r=>{const expiry=clean_(r['تاريخ الانتهاء'],20);return String(r['الحالة'])==='منشور'&&(!expiry||expiry>=today)}).map(r=>{
     let media=[];try{media=JSON.parse(String(r['الوسائط']||'[]'))}catch(ignore){}
-    return {id:r['ID'],businessName:r['اسم النشاط'],ownerName:r['صاحب النشاط'],category:r['التصنيف'],city:r['المدينة'],phone:r['رقم الهاتف'],whatsapp:r['رقم واتساب'],description:r['الوصف'],website:r['رابط الصفحة'],media:Array.isArray(media)?media:[],expiresAt:r['تاريخ الانتهاء'],createdAt:r['وقت الإنشاء']};
+    return {id:r['ID'],businessName:r['اسم النشاط'],ownerName:r['صاحب النشاط'],category:r['التصنيف'],city:r['المدينة'],phone:r['رقم الهاتف'],whatsapp:r['رقم واتساب'],description:r['الوصف'],website:r['رابط الصفحة'],locationUrl:r['رابط الموقع على الخريطة'],media:Array.isArray(media)?media:[],expiresAt:r['تاريخ الانتهاء'],createdAt:r['وقت الإنشاء']};
   }).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 
