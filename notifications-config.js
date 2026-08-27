@@ -67,4 +67,9 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   media.src='family-admin-media-addon.js?v=20260812-3';
   media.defer=true;
   document.head.appendChild(media);
+
+  var bizFix=document.createElement('script');
+  bizFix.src='business-admin-safari-fix.js?v=20260827-1';
+  bizFix.defer=true;
+  document.head.appendChild(bizFix);
 })();
