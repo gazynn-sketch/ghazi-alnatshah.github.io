@@ -126,6 +126,14 @@ Last updated: 2026-08-08
 - Updating Script Properties alone does not require redeploying the Web App unless code/deployment itself changes.
 - Use this handover file as the first reference in future chats.
 
+## Commercial family ads — prepared 2026-08-27
+- Added `business-ads.html` and a home-page button named **إعلانات وأعمال العائلة**.
+- Public visitors can browse, search, filter, call, open WhatsApp, visit the business page, and share an ad.
+- Adding an ad uses one shared family password, verified server-side. No password or password hash is stored in GitHub.
+- Each ad supports the business and owner names, category, city, phone, WhatsApp, description, link, optional expiry, up to three images, or one video.
+- Added `BusinessAdsBackend.gs`; it creates the `الإعلانات التجارية` sheet and a Drive media folder, and stores only the SHA-256 password hash in Script Properties.
+- Before the feature is live, follow `BUSINESS_ADS_SETUP.md`, choose the shared password in Script Properties, run `setInitialBusinessAdsPassword`, and deploy a new version of the existing Apps Script Web App without changing its URL.
+
 
 ## Google Play SDK maintenance — 2026-08-26
 - Google Play flagged `androidx.activity:activity:1.0.0` in Android version `1.2.3` / versionCode `6`.
