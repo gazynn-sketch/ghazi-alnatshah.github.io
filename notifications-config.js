@@ -120,7 +120,12 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   document.head.appendChild(media);
 
   var bizFix=document.createElement('script');
-  bizFix.src='business-admin-safari-fix.js?v=20260827-1';
+  bizFix.src='business-admin-safari-fix.js?v=20260827-2';
   bizFix.defer=true;
   document.head.appendChild(bizFix);
+
+  var bizMediaEdit=document.createElement('script');
+  bizMediaEdit.src='business-admin-media-edit.js?v=20260827-1';
+  bizMediaEdit.defer=true;
+  document.head.appendChild(bizMediaEdit);
 })();
