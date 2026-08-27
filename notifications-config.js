@@ -55,6 +55,57 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   };
 })();
 
+/*
+  ترتيب إعلانات الأعمال حسب عدد التقييمات:
+  - صاحب أكبر عدد تقييمات يظهر أولاً.
+  - عند تساوي العدد، الأعلى في متوسط النجوم يظهر أولاً.
+  - الإعلانات بلا تقييمات تبقى في النهاية.
+*/
+(function(){
+  if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
+  var sorting=false;
+
+  function ratingData(card){
+    var summary=card.querySelector('.reviewsPanel summary');
+    var text=summary ? String(summary.textContent||'') : '';
+    var countMatch=text.match(/\((\d+)\s*تقييم/);
+    var avgMatch=text.match(/([0-5](?:[.,]\d+)?)\s*من\s*5/);
+    return {
+      count: countMatch ? Number(countMatch[1]) : 0,
+      avg: avgMatch ? Number(avgMatch[1].replace(',','.')) : 0
+    };
+  }
+
+  function sortCards(){
+    if(sorting)return;
+    var list=document.getElementById('adsList');
+    if(!list)return;
+    var cards=[].slice.call(list.querySelectorAll(':scope > .ad'));
+    if(cards.length<2)return;
+    sorting=true;
+    cards.forEach(function(card,index){ if(card.__natshaOriginalOrder==null)card.__natshaOriginalOrder=index; });
+    cards.sort(function(a,b){
+      var ra=ratingData(a), rb=ratingData(b);
+      if(rb.count!==ra.count)return rb.count-ra.count;
+      if(rb.avg!==ra.avg)return rb.avg-ra.avg;
+      return a.__natshaOriginalOrder-b.__natshaOriginalOrder;
+    });
+    cards.forEach(function(card){ list.appendChild(card); });
+    sorting=false;
+  }
+
+  function install(){
+    var list=document.getElementById('adsList');
+    if(!list)return setTimeout(install,150);
+    var observer=new MutationObserver(function(){ setTimeout(sortCards,0); });
+    observer.observe(list,{childList:true,subtree:true,characterData:true});
+    sortCards();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
+  else install();
+})();
+
 (function(){
   if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
 
