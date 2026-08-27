@@ -53,7 +53,7 @@ function ensureBusinessAdsReviewsSheet_() {
   const db=db_(); let sheet=db.getSheetByName(BUSINESS_ADS.reviewsSheet);
   const headers=['ID','معرّف الإعلان','اسم المعلّق','التقييم','التعليق','الحالة','وقت الإنشاء'];
   if(!sheet){sheet=db.insertSheet(BUSINESS_ADS.reviewsSheet);sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
-  else if(sheet.getLastColumn()===0){sheet.getRange(1,1,1,headers.length).setValues([headers]);sheet.setFrozenRows(1)}
+  else if(sheet.getLastColumn()===0){sheet.getRange(1,1,1,sheet.getLastColumn()).setValues([headers]);sheet.setFrozenRows(1)}
   else {const current=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0].map(String);const missing=headers.filter(h=>current.indexOf(h)<0);if(missing.length)sheet.getRange(1,sheet.getLastColumn()+1,1,missing.length).setValues([missing])}
   return sheet;
 }
@@ -80,6 +80,16 @@ function findBusinessAd_(adId) {
   return {sheet:sheet,rec:rec};
 }
 
+function parseBusinessMedia_(value){
+  try{const list=JSON.parse(String(value||'[]'));return Array.isArray(list)?list:[]}catch(_){return []}
+}
+
+function validateCombinedBusinessMedia_(media){
+  if(!Array.isArray(media)||media.length>BUSINESS_ADS.maxFiles) throw new Error('الحد الأقصى 3 صور، أو فيديو واحد فقط');
+  const videos=media.filter(x=>x&&x.type==='video').length;
+  if(videos>1||(videos&&media.length>1)) throw new Error('يسمح بفيديو واحد فقط ومن دون صور إضافية');
+}
+
 function updateBusinessAdAdmin_(body) {
   const admin=requireRole_(body.token,['owner','admin','editor']);
   const found=findBusinessAd_(body.adId),rec=found.rec;
@@ -89,11 +99,20 @@ function updateBusinessAdAdmin_(body) {
   if(!businessName||!ownerName||!category||!phone||!description) throw new Error('أكمل بيانات الإعلان المطلوبة');
   if(!/^[0-9+()\-\s]{7,30}$/.test(phone)) throw new Error('رقم الهاتف غير صحيح');
   if(whatsapp&&!/^[0-9+()\-\s]{7,30}$/.test(whatsapp)) throw new Error('رقم واتساب غير صحيح');
+
+  const oldMedia=parseBusinessMedia_(rec['الوسائط']);
+  let keepIndexes=Array.isArray(body.keepMediaIndexes)?body.keepMediaIndexes.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<oldMedia.length):oldMedia.map((_x,i)=>i);
+  keepIndexes=[...new Set(keepIndexes)];
+  const kept=keepIndexes.map(i=>oldMedia[i]).filter(Boolean);
+  const newMedia=saveBusinessAdsMedia_(Array.isArray(body.newMedia)?body.newMedia:[],businessName);
+  const combined=kept.concat(newMedia);
+  validateCombinedBusinessMedia_(combined);
+
   updateRowByHeaders_(found.sheet,rec._row,{
     'اسم النشاط':businessName,'صاحب النشاط':ownerName,'التصنيف':category,'المدينة':city,'رقم الهاتف':phone,'رقم واتساب':whatsapp,
-    'الوصف':description,'رابط الصفحة':website,'رابط الموقع على الخريطة':locationUrl,'تاريخ الانتهاء':expiresAt,'آخر تحديث':now_()
+    'الوصف':description,'رابط الصفحة':website,'رابط الموقع على الخريطة':locationUrl,'الوسائط':JSON.stringify(combined),'تاريخ الانتهاء':expiresAt,'آخر تحديث':now_()
   });
-  return {ok:true,id:body.adId,businessName:businessName,updatedBy:admin.email};
+  return {ok:true,id:body.adId,businessName:businessName,mediaCount:combined.length,updatedBy:admin.email};
 }
 
 function deleteBusinessAdAdmin_(body) {
