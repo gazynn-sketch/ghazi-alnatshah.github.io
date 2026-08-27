@@ -115,5 +115,17 @@ function getBusinessAdsFolder_() {
   const props=PropertiesService.getScriptProperties(),id=props.getProperty(BUSINESS_ADS.folderIdProperty);if(id){try{return DriveApp.getFolderById(id)}catch(ignore){}}
   const folder=DriveApp.createFolder('وسائط الإعلانات التجارية - عائلة النتشة');props.setProperty(BUSINESS_ADS.folderIdProperty,folder.getId());return folder;
 }
-function safeBusinessUrl_(value){const url=clean_(value,500);if(!url)return '';if(!/^https?:\/\//i.test(url))throw new Error('رابط الصفحة يجب أن يبدأ بـ https://');return url}
+
+// الرابطان (صفحة النشاط وموقع المحل) اختياريان بالكامل.
+// إذا كان الحقل فارغًا أو غير صالح، لا نوقف نشر الإعلان.
+// وإذا كتب المستخدم نطاقًا بدون https:// نضيفه تلقائيًا.
+function safeBusinessUrl_(value){
+  const url=clean_(value,500);
+  if(!url)return '';
+  if(/^https?:\/\//i.test(url))return url;
+  if(/^www\./i.test(url))return 'https://'+url;
+  if(/^[a-z0-9.-]+\.[a-z]{2,}(?:[\/:?#].*)?$/i.test(url))return 'https://'+url;
+  return '';
+}
+
 function safeBusinessFileName_(value,mime,index){const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'};return clean_(value,100).replace(/[^a-zA-Z0-9._-]/g,'-').replace(/-+/g,'-')||('media-'+(index+1)+'.'+(ext[mime]||'bin'))}
