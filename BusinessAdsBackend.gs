@@ -9,7 +9,7 @@ const BUSINESS_ADS = Object.freeze({
 function setInitialBusinessAdsPassword() {
   const props=PropertiesService.getScriptProperties();
   const password=clean_(props.getProperty(BUSINESS_ADS.initialPasswordProperty),100);
-  if(password.length<8) throw new Error('أضف BUSINESS_ADS_INITIAL_PASSWORD من 8 خانات على الأقل في Script Properties');
+  if(!/^\d{4,20}$/.test(password)) throw new Error('أضف BUSINESS_ADS_INITIAL_PASSWORD من 4 أرقام على الأقل في Script Properties');
   props.setProperty(BUSINESS_ADS.passwordHashProperty,sha256_(password));
   props.deleteProperty(BUSINESS_ADS.initialPasswordProperty);
   ensureBusinessAdsSheet_();
@@ -20,7 +20,7 @@ function loginBusinessAds_(body) {
   const password=clean_(body&&body.password,100);
   const expected=PropertiesService.getScriptProperties().getProperty(BUSINESS_ADS.passwordHashProperty)||'';
   if(!expected) throw new Error('لم يتم تفعيل كلمة مرور الإعلانات بعد');
-  if(password.length<8||sha256_(password)!==expected) throw new Error('كلمة المرور غير صحيحة');
+  if(!/^\d{4,20}$/.test(password)||sha256_(password)!==expected) throw new Error('كلمة المرور غير صحيحة');
   const token=Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
   CacheService.getScriptCache().put(BUSINESS_ADS.sessionPrefix+token,JSON.stringify({scope:'business-ads',createdAt:now_()}),BUSINESS_ADS.sessionSeconds);
   return {ok:true,token:token,expiresIn:BUSINESS_ADS.sessionSeconds};
@@ -85,4 +85,3 @@ function getBusinessAdsFolder_() {
 }
 function safeBusinessUrl_(value){const url=clean_(value,500);if(!url)return '';if(!/^https?:\/\//i.test(url))throw new Error('رابط الصفحة يجب أن يبدأ بـ https://');return url}
 function safeBusinessFileName_(value,mime,index){const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'};return clean_(value,100).replace(/[^a-zA-Z0-9._-]/g,'-').replace(/-+/g,'-')||('media-'+(index+1)+'.'+(ext[mime]||'bin'))}
-
