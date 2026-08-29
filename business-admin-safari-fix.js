@@ -9,100 +9,54 @@
     }
 
     function removeFromUi(id){
-      try{
-        if(typeof bizRows!=='undefined'&&Array.isArray(bizRows)){
-          bizRows=bizRows.filter(function(x){return String(x.id)!==String(id)&&String(x.status||x.state||x['الحالة']||'')!=='محذوف';});
-        }
-      }catch(_e){}
-      try{
-        var list=document.getElementById('bizList');
-        if(!list)return;
-        [].slice.call(list.querySelectorAll('button')).forEach(function(btn){
-          var onclick=String(btn.getAttribute('onclick')||'');
-          if(onclick.indexOf(String(id))<0)return;
-          var row=btn.closest('.row');
-          if(row)row.remove();
-        });
-      }catch(_e){}
+      try{if(typeof bizRows!=='undefined'&&Array.isArray(bizRows))bizRows=bizRows.filter(function(x){return String(x.id)!==String(id);});}catch(_e){}
+      try{if(typeof renderBusinessAds==='function')renderBusinessAds();}catch(_e){}
     }
 
-    function hideAnyDeletedRows(){
-      try{
-        adminRows().filter(function(x){return String(x.status||x.state||x['الحالة']||'')==='محذوف';}).forEach(function(x){removeFromUi(x.id);});
-      }catch(_e){}
-    }
-
-    async function sendDelete(id,token){
-      var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
-      if(!apiUrl)throw new Error('رابط الخادم غير مضبوط');
-      var payload=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,token:token});
-
-      try{
-        var response=await fetch(apiUrl,{
-          method:'POST',
-          body:new URLSearchParams({payload:payload})
-        });
-        try{
-          var result=await response.json();
-          if(result&&result.ok)return true;
-          if(result&&result.error)throw new Error(result.error);
-        }catch(parseErr){
-          if(parseErr&&parseErr.message&&parseErr.message!=='Load failed')throw parseErr;
-        }
-      }catch(err){
-        var msg=String(err&&err.message||err||'');
-        if(!/Load failed|Failed to fetch|NetworkError|network request failed/i.test(msg))throw err;
-      }
-
-      await fetch(apiUrl,{
-        method:'POST',
-        mode:'no-cors',
-        body:new URLSearchParams({payload:payload})
+    function submitDelete(id,email,pin){
+      return new Promise(function(resolve,reject){
+        var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
+        if(!apiUrl)return reject(new Error('رابط الخادم غير مضبوط'));
+        var frameName='natshaDelete_'+Date.now();
+        var iframe=document.createElement('iframe');
+        iframe.name=frameName;iframe.style.display='none';document.body.appendChild(iframe);
+        var form=document.createElement('form');
+        form.method='POST';form.action=apiUrl;form.target=frameName;form.style.display='none';
+        var input=document.createElement('input');input.type='hidden';input.name='payload';
+        input.value=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,adminEmail:email,adminPin:pin});
+        form.appendChild(input);document.body.appendChild(form);form.submit();
+        setTimeout(function(){try{form.remove();iframe.remove();}catch(_e){} resolve(true);},1800);
       });
-      return true;
     }
-
-    var originalLoad=window.loadBusinessAds;
-    window.loadBusinessAds=async function(){
-      var out=await originalLoad.apply(this,arguments);
-      hideAnyDeletedRows();
-      return out;
-    };
 
     window.deleteBiz=async function(id){
-      var name='';
-      try{var a=adminRows().find(function(x){return String(x.id)===String(id);});name=a&&a.businessName?a.businessName:'';}catch(_e){}
-      if(!confirm('حذف إعلان «'+name+'»؟ سيختفي من لوحة الإدارة والصفحة العامة.'))return;
+      var a=adminRows().find(function(x){return String(x.id)===String(id);});
+      var name=a&&a.businessName?a.businessName:'';
+      if(!confirm('حذف إعلان «'+name+'»؟'))return;
 
-      var adminToken='';
-      try{adminToken=sessionStorage.getItem('natshaAdminToken')||'';}catch(_e){}
-      if(!adminToken){status('bizStatus','انتهت جلسة الإدارة. سجّل الدخول من جديد.',false);return;}
+      var email='';
+      try{email=(me&&me.email)||'';}catch(_e){}
+      if(!email){status('bizStatus','سجّل الخروج ثم ادخل من جديد قبل الحذف.',false);return;}
+
+      var pin=prompt('أدخل رمز المشرف PIN لتأكيد الحذف:');
+      if(pin===null)return;
+      pin=String(pin).trim();
+      if(!/^\d{4,20}$/.test(pin)){status('bizStatus','رمز المشرف غير صحيح.',false);return;}
 
       status('bizStatus','جاري حذف الإعلان...',true);
       try{
-        await sendDelete(id,adminToken);
-        removeFromUi(id);
-        status('bizStatus','تم إرسال الحذف للخادم. جارٍ التحقق...',true);
-
-        setTimeout(async function(){
-          try{
-            await window.loadBusinessAds();
-            var returned=adminRows().some(function(x){return String(x.id)===String(id);});
-            if(returned){
-              status('bizStatus','لم يثبت الحذف في الخادم بعد. سجّل الخروج ثم ادخل من جديد وأعد المحاولة.',false);
-            }else{
-              status('bizStatus','تم حذف الإعلان بنجاح ولن يعود بعد التحديث.',true);
-            }
-          }catch(_e){
-            status('bizStatus','تم إرسال الحذف. اضغط تحديث بعد ثوانٍ للتأكد.',true);
-          }
-        },2500);
-      }catch(e){
-        status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);
-      }
+        await submitDelete(id,email,pin);
+        await new Promise(function(r){setTimeout(r,1200);});
+        await window.loadBusinessAds();
+        var returned=adminRows().some(function(x){return String(x.id)===String(id);});
+        if(returned){
+          status('bizStatus','لم يتم الحذف. تأكد من PIN ثم أعد المحاولة.',false);
+        }else{
+          removeFromUi(id);
+          status('bizStatus','تم حذف الإعلان بنجاح.',true);
+        }
+      }catch(e){status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);}
     };
-
-    hideAnyDeletedRows();
   }
   waitReady();
 })();
