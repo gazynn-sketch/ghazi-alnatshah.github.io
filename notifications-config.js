@@ -19,7 +19,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
 
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
-  ['business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
+  ['business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1','business-video-drive-fix.js?v=20260829-1'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
 })();
 
 (function(){
