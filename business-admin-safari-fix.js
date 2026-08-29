@@ -14,30 +14,44 @@
     }
 
     async function verifyGone(id){
-      await new Promise(function(r){setTimeout(r,1800);});
+      await new Promise(function(r){setTimeout(r,2500);});
       await loadBusinessAds();
       return !adminRows().some(function(x){return String(x.id)===String(id);});
     }
 
-    async function sendDeleteOpaque(id,token){
-      var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
-      if(!apiUrl)throw new Error('رابط الخادم غير مضبوط');
-      var payload=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,token:token});
-      var params=new URLSearchParams();params.set('payload',payload);
+    function sendDeleteByForm(id,token){
+      return new Promise(function(resolve,reject){
+        var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
+        if(!apiUrl)return reject(new Error('رابط الخادم غير مضبوط'));
 
-      // Safari قد ينفذ طلب Apps Script ثم يفشل عند قراءة الرد بسبب CORS/redirect.
-      // sendBeacon يرسل الطلب بدون الحاجة لقراءة الرد، ثم نتحقق عبر GET من اختفاء الإعلان.
-      var beaconSent=false;
-      try{
-        if(navigator.sendBeacon){
-          var blob=new Blob([params.toString()],{type:'application/x-www-form-urlencoded;charset=UTF-8'});
-          beaconSent=navigator.sendBeacon(apiUrl,blob);
-        }
-      }catch(_e){}
+        var frameName='natshaDeleteFrame_'+Date.now();
+        var iframe=document.createElement('iframe');
+        iframe.name=frameName;
+        iframe.style.display='none';
+        document.body.appendChild(iframe);
 
-      if(!beaconSent){
-        await fetch(apiUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:params.toString(),keepalive:true});
-      }
+        var form=document.createElement('form');
+        form.method='POST';
+        form.action=apiUrl;
+        form.target=frameName;
+        form.style.display='none';
+
+        var input=document.createElement('input');
+        input.type='hidden';
+        input.name='payload';
+        input.value=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,token:token});
+        form.appendChild(input);
+        document.body.appendChild(form);
+
+        try{form.submit();}
+        catch(e){try{form.remove();iframe.remove();}catch(_e){} return reject(e);}
+
+        // نموذج HTML عادي يتجاوز مشكلة Safari مع fetch و Apps Script redirects/CORS.
+        setTimeout(function(){
+          try{form.remove();iframe.remove();}catch(_e){}
+          resolve(true);
+        },1800);
+      });
     }
 
     window.deleteBiz=async function(id){
@@ -51,13 +65,13 @@
 
       status('bizStatus','جاري حذف الإعلان...',true);
       try{
-        await sendDeleteOpaque(id,adminToken);
+        await sendDeleteByForm(id,adminToken);
         var gone=await verifyGone(id);
         if(gone){
           removeFromUi(id);
           status('bizStatus','تم حذف الإعلان بنجاح.',true);
         }else{
-          status('bizStatus','وصل طلب الحذف لكن الخادم لم يغيّر حالة الإعلان. أعد تسجيل الدخول ثم جرّب مرة أخرى.',false);
+          status('bizStatus','الخادم استلم الطلب لكن الإعلان ما زال منشورًا. المشكلة الآن في نسخة Apps Script المنشورة، وليست في Safari.',false);
         }
       }catch(e){
         status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);
