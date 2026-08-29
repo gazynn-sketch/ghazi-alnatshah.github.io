@@ -1,8 +1,8 @@
 (function(){
   function waitReady(){
     var ready=false;
-    try{ready=typeof deleteBiz==='function'&&typeof loadBusinessAds==='function'&&typeof api==='function';}catch(_e){}
-    if(!ready)return setTimeout(waitReady,300);
+    try{ready=typeof deleteBiz==='function'&&typeof loadBusinessAds==='function';}catch(_e){}
+    if(!ready||!window.NATSHA_NOTICE_CONFIG)return setTimeout(waitReady,300);
 
     function adminRows(){
       try{return typeof bizRows!=='undefined'&&Array.isArray(bizRows)?bizRows:[];}catch(_e){return [];}
@@ -11,6 +11,33 @@
     function removeFromUi(id){
       try{if(typeof bizRows!=='undefined'&&Array.isArray(bizRows))bizRows=bizRows.filter(function(x){return String(x.id)!==String(id);});}catch(_e){}
       try{if(typeof renderBusinessAds==='function')renderBusinessAds();}catch(_e){}
+    }
+
+    async function verifyGone(id){
+      await new Promise(function(r){setTimeout(r,1800);});
+      await loadBusinessAds();
+      return !adminRows().some(function(x){return String(x.id)===String(id);});
+    }
+
+    async function sendDeleteOpaque(id,token){
+      var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
+      if(!apiUrl)throw new Error('رابط الخادم غير مضبوط');
+      var payload=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,token:token});
+      var params=new URLSearchParams();params.set('payload',payload);
+
+      // Safari قد ينفذ طلب Apps Script ثم يفشل عند قراءة الرد بسبب CORS/redirect.
+      // sendBeacon يرسل الطلب بدون الحاجة لقراءة الرد، ثم نتحقق عبر GET من اختفاء الإعلان.
+      var beaconSent=false;
+      try{
+        if(navigator.sendBeacon){
+          var blob=new Blob([params.toString()],{type:'application/x-www-form-urlencoded;charset=UTF-8'});
+          beaconSent=navigator.sendBeacon(apiUrl,blob);
+        }
+      }catch(_e){}
+
+      if(!beaconSent){
+        await fetch(apiUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:params.toString(),keepalive:true});
+      }
     }
 
     window.deleteBiz=async function(id){
@@ -24,14 +51,14 @@
 
       status('bizStatus','جاري حذف الإعلان...',true);
       try{
-        // استخدم نفس api() الذي تعمل به بقية لوحة الإدارة؛ فهو يضيف token تلقائياً
-        // ويقرأ رد Apps Script الحقيقي بدلاً من إرسال نموذج مخفي لا يمكن معرفة نتيجته.
-        var result=await api('businessAdsSession',{adminAction:'delete',adId:id});
-        if(!result||result.ok!==true)throw new Error((result&&result.error)||'لم يؤكد الخادم عملية الحذف');
-        removeFromUi(id);
-        status('bizStatus','تم حذف الإعلان بنجاح.',true);
-        await new Promise(function(r){setTimeout(r,500);});
-        await loadBusinessAds();
+        await sendDeleteOpaque(id,adminToken);
+        var gone=await verifyGone(id);
+        if(gone){
+          removeFromUi(id);
+          status('bizStatus','تم حذف الإعلان بنجاح.',true);
+        }else{
+          status('bizStatus','وصل طلب الحذف لكن الخادم لم يغيّر حالة الإعلان. أعد تسجيل الدخول ثم جرّب مرة أخرى.',false);
+        }
       }catch(e){
         status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);
       }
