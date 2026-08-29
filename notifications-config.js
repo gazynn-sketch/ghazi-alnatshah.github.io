@@ -20,7 +20,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
 
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
-  ['r2-media-client.js?v=20260829-2','business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1','business-video-drive-fix.js?v=20260829-1','business-share-video-fix.js?v=20260829-2'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
+  ['r2-media-client.js?v=20260829-3','business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1','business-video-drive-fix.js?v=20260829-1','business-share-video-fix.js?v=20260829-2'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
 })();
 
 (function(){
@@ -37,7 +37,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   var dashboard=document.createElement('script');dashboard.src='whatsapp-dashboard-enhanced.js?v=20260809-1';dashboard.defer=true;document.head.appendChild(dashboard);
   var media=document.createElement('script');media.src='family-admin-media-addon.js?v=20260812-3';media.defer=true;document.head.appendChild(media);
   var bizFix=document.createElement('script');bizFix.src='business-admin-safari-fix.js?v=20260829-13';bizFix.defer=true;document.head.appendChild(bizFix);
-  var r2Media=document.createElement('script');r2Media.src='r2-media-client.js?v=20260829-2';r2Media.defer=true;document.head.appendChild(r2Media);
-  var bizMediaEdit=document.createElement('script');bizMediaEdit.src='business-admin-media-edit.js?v=20260829-1';bizMediaEdit.defer=true;document.head.appendChild(bizMediaEdit);
+  var r2Media=document.createElement('script');r2Media.src='r2-media-client.js?v=20260829-3';r2Media.defer=true;document.head.appendChild(r2Media);
+  var bizMediaEdit=document.createElement('script');bizMediaEdit.src='business-admin-media-edit.js?v=20260829-2';bizMediaEdit.defer=true;document.head.appendChild(bizMediaEdit);
   var migrate=document.createElement('script');migrate.src='business-media-migrate.js?v=20260829-2';migrate.defer=true;document.head.appendChild(migrate);
 })();
