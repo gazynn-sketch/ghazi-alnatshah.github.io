@@ -7,7 +7,6 @@ Private R2 storage for business-ad images and videos. The bucket is never expose
 ```bash
 npx wrangler whoami
 npx wrangler r2 bucket create natsha-family-media
-npx wrangler r2 bucket create natsha-family-media-preview
 npx wrangler deploy --config wrangler.jsonc
 ```
 

@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "natsha-family-media",
-  "main": "worker.js",
+  "main": "cloudflare-r2/worker.js",
   "compatibility_date": "2026-08-29",
   "compatibility_flags": ["nodejs_compat"],
   "r2_buckets": [
