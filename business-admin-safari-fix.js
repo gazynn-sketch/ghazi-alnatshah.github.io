@@ -13,7 +13,7 @@
       try{if(typeof renderBusinessAds==='function')renderBusinessAds();}catch(_e){}
     }
 
-    function submitDelete(id,email,pin){
+    function submitDelete(id,email,pin,token){
       return new Promise(function(resolve,reject){
         var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
         if(!apiUrl)return reject(new Error('رابط الخادم غير مضبوط'));
@@ -23,7 +23,7 @@
         var form=document.createElement('form');
         form.method='POST';form.action=apiUrl;form.target=frameName;form.style.display='none';
         var input=document.createElement('input');input.type='hidden';input.name='payload';
-        input.value=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,adminEmail:email,adminPin:pin});
+        input.value=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,adminEmail:email,adminPin:pin,token:token});
         form.appendChild(input);document.body.appendChild(form);form.submit();
         setTimeout(function(){try{form.remove();iframe.remove();}catch(_e){} resolve(true);},1800);
       });
@@ -36,7 +36,9 @@
 
       var email='';
       try{email=(me&&me.email)||'';}catch(_e){}
-      if(!email){status('bizStatus','سجّل الخروج ثم ادخل من جديد قبل الحذف.',false);return;}
+      var adminToken='';
+      try{adminToken=sessionStorage.getItem('natshaAdminToken')||'';}catch(_e){}
+      if(!email||!adminToken){status('bizStatus','سجّل الخروج ثم ادخل من جديد قبل الحذف.',false);return;}
 
       var pin=prompt('أدخل رمز المشرف PIN لتأكيد الحذف:');
       if(pin===null)return;
@@ -45,12 +47,12 @@
 
       status('bizStatus','جاري حذف الإعلان...',true);
       try{
-        await submitDelete(id,email,pin);
-        await new Promise(function(r){setTimeout(r,1200);});
+        await submitDelete(id,email,pin,adminToken);
+        await new Promise(function(r){setTimeout(r,1400);});
         await window.loadBusinessAds();
         var returned=adminRows().some(function(x){return String(x.id)===String(id);});
         if(returned){
-          status('bizStatus','لم يتم الحذف. تأكد من PIN ثم أعد المحاولة.',false);
+          status('bizStatus','لم يتم الحذف. إذا كان PIN صحيحًا سجّل الخروج ثم ادخل من جديد وأعد المحاولة.',false);
         }else{
           removeFromUi(id);
           status('bizStatus','تم حذف الإعلان بنجاح.',true);
