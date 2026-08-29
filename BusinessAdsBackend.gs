@@ -1,7 +1,7 @@
 /* Natsha Family — commercial ads backend. */
 const BUSINESS_ADS = Object.freeze({
   sheet:'الإعلانات التجارية', reviewsSheet:'تفاعلات الإعلانات', passwordHashProperty:'BUSINESS_ADS_PASSWORD_SHA256',
-  initialPasswordProperty:'BUSINESS_ADS_INITIAL_PASSWORD', folderIdProperty:'BUSINESS_ADS_FOLDER_ID',
+  initialPasswordProperty:'BUSINESS_ADS_INITIAL_PASSWORD', folderIdProperty:'BUSINESS_ADS_FOLDER_ID', r2BaseProperty:'BUSINESS_ADS_R2_PUBLIC_BASE_URL',
   sessionPrefix:'business-session:', sessionSeconds:21600, maxFiles:5, maxImages:4, maxVideos:1,
   maxImageBytes:5*1024*1024, maxVideoBytes:12*1024*1024, maxTotalBytes:20*1024*1024
 });
@@ -79,10 +79,24 @@ function listPublicBusinessAds_(){
 }
 function saveBusinessAdsMedia_(items,businessName){
   if(!Array.isArray(items)||items.length>BUSINESS_ADS.maxFiles)throw new Error('الحد الأقصى 4 صور مع فيديو واحد');
+  const references=items.filter(item=>item&&item.key&&item.url&&!item.dataUrl),legacy=items.filter(item=>!item||!item.key||!item.url||item.dataUrl);
+  if(references.length&&legacy.length)throw new Error('تعذر التحقق من مجموعة الوسائط');
+  if(references.length){
+    const normalized=references.map(normalizeBusinessR2Media_);validateCombinedBusinessMedia_(normalized);
+    const total=normalized.reduce((sum,item)=>sum+Number(item.size||0),0);if(total>BUSINESS_ADS.maxTotalBytes)throw new Error('إجمالي الملفات أكبر من 20 MB');return normalized;
+  }
   let total=0,videoCount=0,imageCount=0;
   const prepared=items.map((item,index)=>{const mime=clean_(item&&item.mimeType,100).toLowerCase(),isImage=/^image\/(jpeg|png|webp|gif)$/.test(mime),isVideo=/^video\/(mp4|webm|quicktime)$/.test(mime);if(!isImage&&!isVideo)throw new Error('نوع الملف غير مسموح');if(isVideo)videoCount++;if(isImage)imageCount++;const dataUrl=String(item&&item.dataUrl||''),comma=dataUrl.indexOf(',');if(comma<0)throw new Error('تعذر قراءة الملف رقم '+(index+1));const bytes=Utilities.base64Decode(dataUrl.slice(comma+1));if(isImage&&bytes.length>BUSINESS_ADS.maxImageBytes)throw new Error('إحدى الصور أكبر من 5 MB');if(isVideo&&bytes.length>BUSINESS_ADS.maxVideoBytes)throw new Error('الفيديو أكبر من 12 MB');total+=bytes.length;return {mime,isVideo,bytes,fileName:safeBusinessFileName_(item.fileName,mime,index)}});
   if(videoCount>BUSINESS_ADS.maxVideos)throw new Error('يسمح بفيديو واحد فقط');if(imageCount>BUSINESS_ADS.maxImages)throw new Error('يسمح بأربع صور كحد أقصى');if(total>BUSINESS_ADS.maxTotalBytes)throw new Error('إجمالي الملفات أكبر من 20 MB');if(!prepared.length)return [];
   const folder=getBusinessAdsFolder_();return prepared.map(item=>{const file=folder.createFile(Utilities.newBlob(item.bytes,item.mime,clean_(businessName,40)+'-'+item.fileName));file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);const id=file.getId();return {type:item.isVideo?'video':'image',url:'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1600',fileId:id}});
+}
+function normalizeBusinessR2Media_(item){
+  const mime=clean_(item&&item.mimeType,100).toLowerCase(),isImage=/^image\/(jpeg|png|webp|gif)$/.test(mime),isVideo=/^video\/(mp4|webm|quicktime)$/.test(mime),size=Number(item&&item.size),key=clean_(item&&item.key,200),url=clean_(item&&item.url,800);
+  if(!isImage&&!isVideo)throw new Error('نوع الملف غير مسموح');if(!Number.isInteger(size)||size<1||(isImage&&size>BUSINESS_ADS.maxImageBytes)||(isVideo&&size>BUSINESS_ADS.maxVideoBytes))throw new Error('حجم ملف الوسائط غير صحيح');
+  if(!/^ads\/[0-9]{4}-[0-9]{2}-[0-9]{2}\/[a-f0-9-]{36}\.(jpg|png|webp|gif|mp4|webm|mov)$/i.test(key))throw new Error('مسار ملف الوسائط غير صحيح');
+  const base=clean_(PropertiesService.getScriptProperties().getProperty(BUSINESS_ADS.r2BaseProperty),500).replace(/\/$/,'');if(!/^https:\/\//i.test(base))throw new Error('تخزين الوسائط الآمن غير مفعّل');
+  const expected=base+'/media/'+key;if(url!==expected)throw new Error('رابط ملف الوسائط غير موثوق');
+  return {type:isVideo?'video':'image',url:expected,key:key,mimeType:mime,size:size,storage:'r2'};
 }
 function getBusinessAdsFolder_(){const props=PropertiesService.getScriptProperties(),id=props.getProperty(BUSINESS_ADS.folderIdProperty);if(id){try{return DriveApp.getFolderById(id)}catch(ignore){}}const folder=DriveApp.createFolder('وسائط الإعلانات التجارية - عائلة النتشة');props.setProperty(BUSINESS_ADS.folderIdProperty,folder.getId());return folder}
 function safeBusinessUrl_(value){const url=clean_(value,500);if(!url)return '';if(/^https?:\/\//i.test(url))return url;if(/^www\./i.test(url))return 'https://'+url;if(/^[a-z0-9.-]+\.[a-z]{2,}(?:[\/:?#].*)?$/i.test(url))return 'https://'+url;return ''}

@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "natsha-family-media",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-29",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "natsha-family-media",
+      "preview_bucket_name": "natsha-family-media-preview"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://gazynn-sketch.github.io",
+    "AUTH_VALIDATE_URL": "https://script.google.com/macros/s/AKfycbwqY9A2JlUEXxUJrTcMegJ0Qwy1cOn9jGiKb8E9ObWdkYy6jOlfROR0Kmx9G68q8N1H/exec",
+    "PUBLIC_BASE_URL": ""
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+  }
+}

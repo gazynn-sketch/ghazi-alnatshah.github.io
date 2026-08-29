@@ -134,6 +134,13 @@ Last updated: 2026-08-08
 - Added `BusinessAdsBackend.gs`; it creates the `الإعلانات التجارية` sheet and a Drive media folder, and stores only the SHA-256 password hash in Script Properties.
 - Before the feature is live, follow `BUSINESS_ADS_SETUP.md`, choose the shared password in Script Properties, run `setInitialBusinessAdsPassword`, and deploy a new version of the existing Apps Script Web App without changing its URL.
 
+## Secure R2 media — prepared 2026-08-29
+- Branch `feature/secure-r2-media` prepares a private Cloudflare R2 bucket and a Worker gateway for business-ad images and videos.
+- Permanent R2 credentials and upload keys are not placed in GitHub or browser code. The Worker validates the existing business/admin session through the Apps Script Web App before accepting a file.
+- Upload validation covers origin, MIME allowlist, binary signature, per-file size, unpredictable UUID object names, and session-owned cleanup. Video delivery supports byte ranges.
+- Existing Drive media remains compatible. `r2MediaEnabled` stays `false` until the Worker is deployed, `BUSINESS_ADS_R2_PUBLIC_BASE_URL` is set in Apps Script, the updated `BusinessAdsBackend.gs` is deployed, and one live upload is verified.
+- Deployment instructions are in `cloudflare-r2/README.md`.
+
 
 ## Google Play SDK maintenance — 2026-08-26
 - Google Play flagged `androidx.activity:activity:1.0.0` in Android version `1.2.3` / versionCode `6`.
