@@ -4,6 +4,37 @@
     try{ready=typeof deleteBiz==='function'&&typeof loadBusinessAds==='function';}catch(_e){}
     if(!ready||!window.NATSHA_NOTICE_CONFIG)return setTimeout(waitReady,300);
 
+    function adminRows(){
+      try{return typeof bizRows!=='undefined'&&Array.isArray(bizRows)?bizRows:[];}catch(_e){return [];}
+    }
+
+    function hideDeletedFromUi(id){
+      try{
+        if(typeof bizRows!=='undefined'&&Array.isArray(bizRows)){
+          bizRows=bizRows.filter(function(x){return String(x.id)!==String(id)&&String(x.status||x.state||'')!=='محذوف';});
+        }
+      }catch(_e){}
+
+      try{
+        var list=document.getElementById('bizList');
+        if(!list)return;
+        var buttons=[].slice.call(list.querySelectorAll('button'));
+        buttons.forEach(function(btn){
+          var onclick=String(btn.getAttribute('onclick')||'');
+          if(onclick.indexOf(String(id))<0)return;
+          var row=btn.closest('.row');
+          if(row)row.remove();
+        });
+      }catch(_e){}
+    }
+
+    function hideAnyDeletedRows(){
+      try{
+        var deleted=adminRows().filter(function(x){return String(x.status||x.state||x['الحالة']||'')==='محذوف';});
+        deleted.forEach(function(x){hideDeletedFromUi(x.id);});
+      }catch(_e){}
+    }
+
     function submitHiddenForm(id,token){
       return new Promise(function(resolve){
         var apiUrl=(window.NATSHA_NOTICE_CONFIG||{}).apiUrl||'';
@@ -22,10 +53,17 @@
       });
     }
 
+    var originalLoad=window.loadBusinessAds;
+    window.loadBusinessAds=async function(){
+      var out=await originalLoad.apply(this,arguments);
+      hideAnyDeletedRows();
+      return out;
+    };
+
     window.deleteBiz=async function(id){
       var name='';
-      try{var a=(typeof bizRows!=='undefined'&&Array.isArray(bizRows)?bizRows:[]).find(function(x){return String(x.id)===String(id);});name=a&&a.businessName?a.businessName:'';}catch(_e){}
-      if(!confirm('حذف إعلان «'+name+'» من الظهور العام؟'))return;
+      try{var a=adminRows().find(function(x){return String(x.id)===String(id);});name=a&&a.businessName?a.businessName:'';}catch(_e){}
+      if(!confirm('حذف إعلان «'+name+'»؟ سيختفي فورًا من لوحة الإدارة والصفحة العامة.'))return;
 
       var adminToken='';
       try{adminToken=sessionStorage.getItem('natshaAdminToken')||'';}catch(_e){}
@@ -35,14 +73,17 @@
       try{
         var submitted=await submitHiddenForm(id,adminToken);
         if(!submitted)throw new Error('رابط الخادم غير مضبوط');
-        await new Promise(function(r){setTimeout(r,1800);});
-        try{await loadBusinessAds();}catch(_e){}
-        var stillThere=false;
-        try{stillThere=(typeof bizRows!=='undefined'&&Array.isArray(bizRows)?bizRows:[]).some(function(x){return String(x.id)===String(id);});}catch(_e){}
-        if(stillThere)status('bizStatus','تم إرسال طلب الحذف. اضغط تحديث بعد ثوانٍ؛ إذا بقي الإعلان سجّل الخروج ثم ادخل من جديد.',false);
-        else status('bizStatus','تم حذف الإعلان من الظهور العام.',true);
-      }catch(e){status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);}
+        hideDeletedFromUi(id);
+        status('bizStatus','تم حذف الإعلان وإخفاؤه من لوحة الإدارة والصفحة العامة.',true);
+        setTimeout(async function(){
+          try{await window.loadBusinessAds();}catch(_e){}
+        },2200);
+      }catch(e){
+        status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);
+      }
     };
+
+    hideAnyDeletedRows();
   }
   waitReady();
 })();
