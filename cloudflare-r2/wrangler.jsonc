@@ -13,7 +13,7 @@
   "vars": {
     "ALLOWED_ORIGIN": "https://gazynn-sketch.github.io",
     "AUTH_VALIDATE_URL": "https://script.google.com/macros/s/AKfycbwqY9A2JlUEXxUJrTcMegJ0Qwy1cOn9jGiKb8E9ObWdkYy6jOlfROR0Kmx9G68q8N1H/exec",
-    "PUBLIC_BASE_URL": ""
+    "PUBLIC_BASE_URL": "https://natsha-family-media.gazynn.workers.dev"
   },
   "observability": {
     "enabled": true,
