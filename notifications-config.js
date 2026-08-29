@@ -4,7 +4,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   ownerEmail: 'gazynn@gmail.com',
   whatsappEnabled: true,
   pushEnabled: true,
-  r2MediaEnabled: true,
+  r2MediaEnabled: false,
   r2MediaApiUrl: 'https://natsha-family-media.gazynn.workers.dev'
 });
 
