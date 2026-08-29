@@ -39,14 +39,13 @@
         var input=document.createElement('input');
         input.type='hidden';
         input.name='payload';
-        input.value=JSON.stringify({action:'businessAdsSession',adminAction:'delete',adId:id,token:token});
+        input.value=JSON.stringify({action:'deleteBusinessAdAdminDirect',adId:id,token:token});
         form.appendChild(input);
         document.body.appendChild(form);
 
         try{form.submit();}
         catch(e){try{form.remove();iframe.remove();}catch(_e){} return reject(e);}
 
-        // نموذج HTML عادي يتجاوز مشكلة Safari مع fetch و Apps Script redirects/CORS.
         setTimeout(function(){
           try{form.remove();iframe.remove();}catch(_e){}
           resolve(true);
@@ -71,7 +70,7 @@
           removeFromUi(id);
           status('bizStatus','تم حذف الإعلان بنجاح.',true);
         }else{
-          status('bizStatus','الخادم استلم الطلب لكن الإعلان ما زال منشورًا. المشكلة الآن في نسخة Apps Script المنشورة، وليست في Safari.',false);
+          status('bizStatus','وصل الطلب لكن الإجراء المباشر في Apps Script لم يغيّر حالة الإعلان.',false);
         }
       }catch(e){
         status('bizStatus',String(e&&e.message||e||'تعذر حذف الإعلان'),false);
