@@ -15,8 +15,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   function wait(ms){ return new Promise(function(resolve){ setTimeout(resolve,ms); }); }
   function isRetryableError(err){var msg=String(err&&err.message||err||'');return /Load failed|Failed to fetch|NetworkError|network request failed/i.test(msg);}
   function isAppsScriptUrl(input){var url=typeof input==='string'?input:(input&&input.url)||'';return /^https:\/\/script\.google\.com\//i.test(url);}
-  function isSafePostDelete(options){try{if(!options||String(options.method||'GET').toUpperCase()!=='POST')return false;var body=options.body;if(!(body instanceof URLSearchParams))return false;var raw=body.get('payload');if(!raw)return false;var payload=JSON.parse(raw);return payload&&payload.action==='businessAdsSession'&&payload.adminAction==='delete';}catch(_){return false;}}
-  window.fetch=async function(input,options){var method=String(options&&options.method||(input&&input.method)||'GET').toUpperCase();var retryable=isAppsScriptUrl(input)&&(method==='GET'||isSafePostDelete(options));try{return await originalFetch(input,options);}catch(err){if(!retryable||!isRetryableError(err))throw err;await wait(700);return await originalFetch(input,options);}};
+  window.fetch=async function(input,options){var method=String(options&&options.method||(input&&input.method)||'GET').toUpperCase();var retryable=isAppsScriptUrl(input)&&method==='GET';try{return await originalFetch(input,options);}catch(err){if(!retryable||!isRetryableError(err))throw err;await wait(700);return await originalFetch(input,options);}};
 })();
 
 (function(){
@@ -37,7 +36,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
   var dashboard=document.createElement('script');dashboard.src='whatsapp-dashboard-enhanced.js?v=20260809-1';dashboard.defer=true;document.head.appendChild(dashboard);
   var media=document.createElement('script');media.src='family-admin-media-addon.js?v=20260812-3';media.defer=true;document.head.appendChild(media);
-  var bizFix=document.createElement('script');bizFix.src='business-admin-safari-fix.js?v=20260829-3';bizFix.defer=true;document.head.appendChild(bizFix);
+  var bizFix=document.createElement('script');bizFix.src='business-admin-safari-fix.js?v=20260829-4';bizFix.defer=true;document.head.appendChild(bizFix);
   var r2Media=document.createElement('script');r2Media.src='r2-media-client.js?v=20260829-2';r2Media.defer=true;document.head.appendChild(r2Media);
   var bizMediaEdit=document.createElement('script');bizMediaEdit.src='business-admin-media-edit.js?v=20260829-1';bizMediaEdit.defer=true;document.head.appendChild(bizMediaEdit);
   var migrate=document.createElement('script');migrate.src='business-media-migrate.js?v=20260829-2';migrate.defer=true;document.head.appendChild(migrate);
