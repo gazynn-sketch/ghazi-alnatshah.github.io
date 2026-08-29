@@ -36,7 +36,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
   var dashboard=document.createElement('script');dashboard.src='whatsapp-dashboard-enhanced.js?v=20260809-1';dashboard.defer=true;document.head.appendChild(dashboard);
   var media=document.createElement('script');media.src='family-admin-media-addon.js?v=20260812-3';media.defer=true;document.head.appendChild(media);
-  var bizFix=document.createElement('script');bizFix.src='business-admin-safari-fix.js?v=20260829-8';bizFix.defer=true;document.head.appendChild(bizFix);
+  var bizFix=document.createElement('script');bizFix.src='business-admin-safari-fix.js?v=20260829-9';bizFix.defer=true;document.head.appendChild(bizFix);
   var r2Media=document.createElement('script');r2Media.src='r2-media-client.js?v=20260829-2';r2Media.defer=true;document.head.appendChild(r2Media);
   var bizMediaEdit=document.createElement('script');bizMediaEdit.src='business-admin-media-edit.js?v=20260829-1';bizMediaEdit.defer=true;document.head.appendChild(bizMediaEdit);
   var migrate=document.createElement('script');migrate.src='business-media-migrate.js?v=20260829-2';migrate.defer=true;document.head.appendChild(migrate);
