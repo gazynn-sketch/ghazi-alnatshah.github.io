@@ -2,20 +2,22 @@
   function config(){return window.NATSHA_NOTICE_CONFIG||{};}
   function baseUrl(){return String(config().r2MediaApiUrl||'').replace(/\/$/,'');}
   function enabled(){return config().r2MediaEnabled===true&&/^https:\/\//.test(baseUrl());}
+  function safeHeaderFileName(value){var name=String(value||'media').replace(/[\r\n\0]/g,'').replace(/[^\x20-\x7E]/g,'_').slice(0,180);return name||'media';}
+  function friendlyUploadError(error){var msg=String(error&&error.message||error||'');if(/TypeError|Type error|Load failed|Failed to fetch|NetworkError|network request failed/i.test(msg))return new Error('تعذر رفع الملف من الهاتف. أعد فتح الصفحة وتأكد من اتصال الإنترنت ثم حاول مجددًا.');return error instanceof Error?error:new Error(msg||'تعذر رفع ملف الوسائط.');}
 
   async function uploadFile(file,token,scope){
     if(!enabled())throw new Error('تخزين الوسائط الآمن غير مفعّل.');
     if(!token)throw new Error('انتهت جلسة الدخول؛ أدخل كلمة المرور من جديد.');
-    var response=await fetch(baseUrl()+'/upload',{
+    var response;try{response=await fetch(baseUrl()+'/upload',{
       method:'POST',
       headers:{
         'Authorization':'Bearer '+token,
         'Content-Type':file.type,
-        'X-File-Name':file.name||'media',
+        'X-File-Name':safeHeaderFileName(file.name),
         'X-Natsha-Auth-Scope':scope||'business'
       },
       body:file
-    });
+    });}catch(error){throw friendlyUploadError(error);}
     var result={};try{result=await response.json();}catch(_e){}
     if(!response.ok||!result.ok)throw new Error(result.error||'تعذر رفع ملف الوسائط.');
     return {type:result.type,url:result.url,key:result.key,mimeType:result.mimeType,size:result.size,storage:'r2'};
