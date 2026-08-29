@@ -27,7 +27,9 @@ export default {
     }
 
     if (url.pathname === '/upload' && request.method === 'POST') {
-      if (!cors) return json({ ok: false, error: 'Origin not allowed' }, 403);
+      // Apps Script server-to-server requests do not send Origin. Browser
+      // requests still must match the one configured production origin.
+      if (origin && !cors) return json({ ok: false, error: 'Origin not allowed' }, 403);
       const auth = await authorizeUpload(request, env);
       if (!auth.ok) return json({ ok: false, error: auth.error }, auth.status, cors);
 
@@ -75,7 +77,7 @@ export default {
     }
 
     if (url.pathname === '/cleanup' && request.method === 'POST') {
-      if (!cors) return json({ ok: false, error: 'Origin not allowed' }, 403);
+      if (origin && !cors) return json({ ok: false, error: 'Origin not allowed' }, 403);
       const auth = await authorizeUpload(request, env);
       if (!auth.ok) return json({ ok: false, error: auth.error }, auth.status, cors);
       let payload;
