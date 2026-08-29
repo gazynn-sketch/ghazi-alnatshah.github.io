@@ -5,7 +5,7 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   whatsappEnabled: true,
   pushEnabled: true,
   r2MediaEnabled: false,
-  r2MediaApiUrl: ''
+  r2MediaApiUrl: 'https://natsha-family-media.gazynn.workers.dev'
 });
 
 (function(){
