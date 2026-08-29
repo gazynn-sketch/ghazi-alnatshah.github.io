@@ -1,9 +1,21 @@
 (function(){
   'use strict';
 
+  function adminToken(){
+    try{return typeof token!=='undefined'?String(token||''):(sessionStorage.getItem('natshaAdminToken')||'');}
+    catch(_e){return sessionStorage.getItem('natshaAdminToken')||'';}
+  }
+
+  function adminAds(){
+    try{return typeof bizRows!=='undefined'&&Array.isArray(bizRows)?bizRows:[];}
+    catch(_e){return [];}
+  }
+
   function waitForAdmin(){
     if(!/family-admin\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
-    if(typeof api!=='function'||typeof loadBusinessAds!=='function'||!Array.isArray(window.bizRows)||!window.NatshaR2Media){
+    var apiReady=false,loadReady=false;
+    try{apiReady=typeof api==='function';loadReady=typeof loadBusinessAds==='function';}catch(_e){}
+    if(!apiReady||!loadReady||!window.NatshaR2Media){
       return setTimeout(waitForAdmin,250);
     }
     install();
@@ -85,9 +97,7 @@
     if(type==='image/svg+xml'||/\.svg(?:$|[?#])/i.test(String(media.url||''))){
       blob=await svgToPng(blob);type='image/png';
     }
-    if(!type){
-      type=media.type==='video'?'video/mp4':'image/jpeg';
-    }
+    if(!type)type=media.type==='video'?'video/mp4':'image/jpeg';
     var allowed=/^(image\/(jpeg|png|webp|gif)|video\/(mp4|webm|quicktime))$/i.test(type);
     if(!allowed)throw new Error('نوع وسائط غير مدعوم بعد التنزيل: '+type);
     var ext=fileExt(type,media.type==='video');
@@ -119,9 +129,14 @@
     if(!window.NatshaR2Media||!window.NatshaR2Media.enabled()){
       status('تخزين R2 غير مفعّل في إعدادات الموقع. أعد تحميل الصفحة ثم حاول مرة أخرى.',true);return;
     }
-    if(!window.token){status('انتهت جلسة الإدارة. سجّل الدخول من جديد ثم أعد المحاولة.',true);return;}
+    var currentToken=adminToken();
+    if(!currentToken){status('انتهت جلسة الإدارة. سجّل الدخول من جديد ثم أعد المحاولة.',true);return;}
 
-    var ads=(window.bizRows||[]).filter(hasLegacy);
+    try{await api('session');}catch(e){
+      status('جلسة الإدارة غير صالحة. سجّل الخروج ثم ادخل من جديد قبل الترحيل.',true);return;
+    }
+
+    var ads=adminAds().filter(hasLegacy);
     if(!ads.length){status('لا توجد وسائط قديمة تحتاج إلى ترحيل. كل الوسائط الحالية على R2.');return;}
 
     var okAds=0,failedAds=0,uploadedCount=0,failures=[];
@@ -142,7 +157,7 @@
           status('جاري ترحيل إعلان '+(a+1)+' من '+ads.length+': '+String(ad.businessName||ad.id)+'…');
           for(var f=0;f<files.length;f++){
             var file=await mediaToFile(files[f].media,f);
-            var refs=await window.NatshaR2Media.uploadFiles([file],window.token,'admin',function(){
+            var refs=await window.NatshaR2Media.uploadFiles([file],currentToken,'admin',function(){
               status('جاري رفع '+String(ad.businessName||ad.id)+' — ملف '+(f+1)+' من '+files.length+' إلى R2…');
             });
             uploaded.push(refs[0]);uploadedCount++;
@@ -152,7 +167,7 @@
         }catch(e){
           failedAds++;
           failures.push(String(ad.businessName||ad.id)+': '+String(e&&e.message||e));
-          if(uploaded.length)await window.NatshaR2Media.cleanup(uploaded,window.token,'admin');
+          if(uploaded.length)await window.NatshaR2Media.cleanup(uploaded,currentToken,'admin');
         }
       }
       await loadBusinessAds();
