@@ -13,14 +13,14 @@ window.NATSHA_NOTICE_CONFIG = Object.freeze({
   if(!originalFetch || window.__natshaFetchRetryInstalled)return;
   window.__natshaFetchRetryInstalled = true;
   function wait(ms){ return new Promise(function(resolve){ setTimeout(resolve,ms); }); }
-  function isRetryableError(err){var msg=String(err&&err.message||err||'');return /Load failed|Failed to fetch|NetworkError|network request failed/i.test(msg);}
+  function isRetryableError(err){var msg=String(err&&err.message||err||'');return /Load failed|Failed to fetch|NetworkError|network request failed|expected pattern/i.test(msg);}
   function isAppsScriptUrl(input){var url=typeof input==='string'?input:(input&&input.url)||'';return /^https:\/\/script\.google\.com\//i.test(url);}
   window.fetch=async function(input,options){var method=String(options&&options.method||(input&&input.method)||'GET').toUpperCase();var retryable=isAppsScriptUrl(input)&&method==='GET';try{return await originalFetch(input,options);}catch(err){if(!retryable||!isRetryableError(err))throw err;await wait(700);return await originalFetch(input,options);}};
 })();
 
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
-  ['r2-media-client.js?v=20260829-3','business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1','business-video-drive-fix.js?v=20260829-1','business-share-video-fix.js?v=20260829-2'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
+  ['business-api-safari-fix.js?v=20260916-1','r2-media-client.js?v=20260829-3','business-reviews-fix.js?v=20260827-2','business-media-limits.js?v=20260829-1','business-video-drive-fix.js?v=20260829-1','business-share-video-fix.js?v=20260829-2'].forEach(function(src){var s=document.createElement('script');s.src=src;s.defer=true;document.head.appendChild(s);});
 })();
 
 (function(){
