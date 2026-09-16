@@ -1,4 +1,4 @@
-/* Safari/iOS compatibility for business-ads API requests. */
+/* Safari/iOS compatibility for business-ads API GET requests. */
 (function(){
   if(!/business-ads\.html(?:$|[?#])/.test(location.pathname+location.search+location.hash))return;
 
@@ -14,36 +14,30 @@
     return j;
   }
 
-  function xhrText(method,url,body){
+  function xhrGet(url){
     return new Promise(function(resolve,reject){
       var xhr=new XMLHttpRequest();
-      try{xhr.open(method,url,true);}catch(e){reject(e);return;}
+      try{xhr.open('GET',url,true);}catch(e){reject(e);return;}
       xhr.timeout=25000;
       xhr.setRequestHeader('Accept','application/json,text/plain,*/*');
-      if(method==='POST')xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=UTF-8');
       xhr.onload=function(){
         if(xhr.status>=200&&xhr.status<400)resolve(xhr.responseText||'');
         else reject(new Error('فشل الاتصال بخادم الإعلانات ('+xhr.status+').'));
       };
       xhr.onerror=function(){reject(new Error('تعذر الاتصال بخادم الإعلانات.'));};
       xhr.ontimeout=function(){reject(new Error('انتهت مهلة الاتصال بخادم الإعلانات.'));};
-      try{xhr.send(body||null);}catch(e){reject(e);}
+      try{xhr.send(null);}catch(e){reject(e);}
     });
   }
 
-  async function requestText(method,url,body){
+  async function getText(url){
     try{
-      var options={method:method,cache:'no-store'};
-      if(method==='POST'){
-        options.headers={'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'};
-        options.body=body;
-      }
-      var response=await fetch(url,options);
+      var response=await fetch(url,{method:'GET',cache:'no-store'});
       if(!response.ok)throw new Error('HTTP '+response.status);
       return await response.text();
     }catch(error){
       if(!retryable(error)&&!/HTTP\s+\d+/i.test(String(error&&error.message||error||'')))throw error;
-      return await xhrText(method,url,body);
+      return await xhrGet(url);
     }
   }
 
@@ -51,28 +45,23 @@
     if(typeof window.api!=='function')return setTimeout(install,60);
     if(window.api.__natshaSafariSafe)return;
 
+    var originalApi=window.api;
     var safeApi=async function(action,data,method){
-      data=data||{};method=method||'POST';
+      method=method||'POST';
+      /* Keep the original POST path so the page's private businessToken remains attached correctly. */
+      if(method!=='GET')return originalApi(action,data,method);
+
       var base=baseUrl();
       if(!/^https:\/\//i.test(base))throw new Error('رابط خادم الإعلانات غير مضبوط.');
-
-      if(method==='GET'){
-        var joiner=base.indexOf('?')>=0?'&':'?';
-        var url=base+joiner+'action='+encodeURIComponent(action)+'&v='+Date.now();
-        return parseJson(await requestText('GET',url,''));
-      }
-
-      var payload={action:action};
-      Object.keys(data).forEach(function(k){payload[k]=data[k];});
-      try{if(window.businessToken)payload.businessToken=window.businessToken;}catch(_e){}
-      var body='payload='+encodeURIComponent(JSON.stringify(payload));
-      return parseJson(await requestText('POST',base,body));
+      var joiner=base.indexOf('?')>=0?'&':'?';
+      var url=base+joiner+'action='+encodeURIComponent(action)+'&v='+Date.now();
+      return parseJson(await getText(url));
     };
     safeApi.__natshaSafariSafe=true;
     window.api=safeApi;
 
-    /* Re-run the directory load if the page's first Safari fetch already failed. */
-    setTimeout(function(){try{if(typeof window.loadAds==='function')window.loadAds();}catch(_e){}},80);
+    /* If Safari's first request already failed, immediately try again through the safe path. */
+    setTimeout(function(){try{if(typeof window.loadAds==='function')window.loadAds();}catch(_e){}},100);
   }
 
   install();
