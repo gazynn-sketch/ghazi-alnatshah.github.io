@@ -64,7 +64,7 @@ function shell(){
   <header class="registry-header"><div class="header-inner">
    <div class="masthead"><a class="brand" href="index.html" aria-label="العودة إلى صدقة جارية"><span class="brand-mark">${icon('tree')}</span><span><strong>عائلة النتشه</strong><small>جذورٌ تجمعنا · صدقة جارية</small></span></a><div class="account"><span class="account-name">${esc(accountName)}</span><span class="role-chip">${roleLabel}</span>${!state.demo?'<button class="header-logout" data-action="logout" aria-label="تسجيل الخروج">'+icon('logout')+'<span>خروج</span></button>':''}</div></div>
    <nav class="main-nav" aria-label="القائمة الرئيسية">${navItems.filter(n=>n[0]!=='admin'||canAdmin()).map(n=>'<button data-view="'+n[0]+'" class="'+(state.view===n[0]?'active':'')+'" '+(state.view===n[0]?'aria-current="page"':'')+'>'+icon(n[1])+'<span>'+navLabels[n[0]]+'</span></button>').join('')}</nav>
-   <div class="region-bar"><label for="region-select">اختر العائلة</label><select id="region-select" class="region-select" aria-label="اختر العائلة">${options(Object.entries(regions).filter(([r])=>state.demo||state.user?.regions?.includes(r)),state.region)}</select><span class="region-count">${num(count)} فردًا في سجل ${regions[state.region]}</span></div>
+   <div class="region-bar"><label for="region-select">اختر العائلة</label><select id="region-select" class="region-select" aria-label="اختر العائلة">${options(Object.entries(regions).filter(([r])=>state.demo||state.user?.regions?.includes(r)),state.region)}</select><span class="region-count">${num(count)} فردًا في سجل ${regions[state.region]}</span><button class="choose-again" data-action="choose-family">${icon('grid')} واجهة الفروع</button></div>
   </div></header>
   <div class="workspace"><main id="main" class="content">
    ${state.local?'<div class="demo-strip"><span><strong>سجل '+regions[state.region]+'</strong> · نسخة خاصة للقراءة من جهازك.</span><button data-action="clear-private">إغلاق الملف الخاص</button></div>':state.demo?'<div class="demo-strip"><span><strong>معاينة التصميم · بيانات وهمية</strong> · التعديلات مؤقتة وتُمسح عند تحديث الصفحة.</span><button data-action="demo-info">عن هذه النسخة</button></div>':''}
@@ -153,6 +153,25 @@ function exportCSV(){
  const blob=new Blob(['\uFEFF'+[headings,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download=(state.demo?'DEMO-':'')+'natsha-family-'+state.region+'-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('تم تصدير '+num(people.length)+' سجلًا دون معلومات الاتصال الخاصة.');
 }
+function familyPicker(error=''){
+ const choices=[['quds','القدس','ق','أسماء تجمعنا في رحاب القدس'],['jordan','الأردن','أ','أهلنا وامتداد عائلتنا في الأردن'],['hebron','الخليل','خ','جذور العائلة وحكاية البدايات']];
+ $('#app').innerHTML=`<div class="family-landing"><header class="family-landing-top"><a href="index.html" class="brand"><span class="brand-mark">${icon('tree')}</span><span><strong>عائلة النتشه</strong><small>جذور واحدة · فروع تجمعنا</small></span></a>${!state.demo?'<button class="header-logout" data-action="logout" aria-label="تسجيل الخروج">'+icon('logout')+'<span>خروج</span></button>':''}</header><main id="main" class="family-landing-main"><div class="family-intro"><span class="family-step">${state.demo?'معاينة التصميم · بيانات وهمية':'أهلًا وسهلًا، '+esc(state.user.name)}</span><h1>أيّ فرع تحب تزور؟</h1><p>اختر فرع العائلة للاطلاع على أفراده وشجرته.</p></div>${error?'<p class="error" role="alert">'+esc(error)+'</p>':''}<div class="family-choices" aria-label="اختيار فرع العائلة">${choices.map(([key,label,letter,description])=>{
+  const soon=key==='hebron',allowed=!soon&&(state.demo||state.user?.regions?.includes(key));
+  return '<button type="button" class="family-choice choice-'+key+'" data-action="pick-family" data-region="'+key+'" '+(!allowed?'disabled':'')+'><span class="choice-art" aria-hidden="true"><span class="choice-letter">'+letter+'</span>'+icon('tree')+'</span><span class="choice-body"><span class="choice-status '+(!allowed?'unavailable':'')+'">'+(soon?'قريبًا':allowed?'متاح للدخول':'غير متاح لهذا الحساب')+'</span><strong class="choice-title">النتشه – '+label+'</strong><span class="choice-description">'+description+'</span><span class="choice-link">'+(soon?'نعمل على تجهيز هذا الفرع':allowed?'الدخول إلى السجل':'راجع مدير السجل للصلاحية')+(allowed?icon('arrow'):'')+'</span></span></button>';
+ }).join('')}</div><p class="family-landing-note">من القدس إلى الأردن والخليل… تبقى العائلة صلةً تجمعنا.</p><a class="family-back" href="index.html">العودة إلى صدقة جارية ${icon('arrow')}</a></main></div>`;
+ window.scrollTo(0,0);
+}
+async function enterFamily(region){
+ if(!Object.hasOwn(regions,region)||(!state.demo&&!state.user?.regions?.includes(region)))throw Error('هذا الفرع غير متاح لحسابك.');
+ const previous=state.region;state.region=region;
+ document.querySelectorAll('[data-action="pick-family"]').forEach(button=>button.disabled=true);
+ const selected=document.querySelector('[data-region="'+region+'"] .choice-link');if(selected)selected.textContent='جارٍ فتح السجل…';
+ try{
+  if(state.demo)state.data=state.datasets[region];else await load();
+  state.collapsed=new Set(state.local?state.data.people.map(p=>p.id):[]);state.selected='';state.zoom=1;
+  closeDialog();navigate('dashboard');
+ }catch(error){state.region=previous;if(state.token||state.demo)familyPicker(error.message)}
+}
 function loginScreen(){
  $('#app').innerHTML='<main class="login-shell"><section class="login-card"><div class="brand-mark">'+icon('tree')+'</div><h1>سجل عائلة النتشه</h1><p>مرحبًا بكم. سجّل الدخول للاطلاع على أفراد العائلة وشجرتها.</p><form id="login-form"><div class="error" id="form-error" role="alert"></div>'+field('username','اسم المستخدم','','text','required autocomplete="username" maxlength="60"')+field('password','كلمة المرور','','password','required autocomplete="current-password" maxlength="200"')+'<button class="btn primary" type="submit">دخول إلى السجل '+icon('arrow')+'</button></form><a class="btn ghost" href="index.html">العودة إلى صدقة جارية</a></section></main>';
 }
@@ -160,6 +179,8 @@ async function action(el){
  const a=el.dataset.action;
  if(a==='clear-private'){state.local=false;state.demo=true;state.datasets={quds:createDemo(),jordan:createDemo()};state.data=state.datasets[state.region];closeDialog();navigate('dashboard');return}
  if(a==='close')return closeDialog();
+ if(a==='choose-family'){closeDialog();familyPicker();return}
+ if(a==='pick-family')return enterFamily(el.dataset.region);
  if(a==='menu'){const sidebar=$('#sidebar');sidebar.classList.toggle('open');return}
  if(a==='add')return personForm();
  if(a==='edit')return personForm(el.dataset.id);
@@ -211,10 +232,10 @@ document.addEventListener('submit',async event=>{
  try{
   if(form.id==='person-form')await savePerson(form);
   else if(form.id==='branch-form'){const name=new FormData(form).get('name').trim();if(!name)throw Error('أدخل اسم الفخذ.');if(state.data.branches.includes(name))throw Error('هذا الفخذ مسجل بالفعل.');if(state.demo){state.data.branches.push(name);audit('إضافة فخذ')}else{await api('branches',{name});await load()}closeDialog();shell();toast('تمت إضافة الفخذ.')}
-  else if(form.id==='login-form'){const data=await api('login',Object.fromEntries(new FormData(form)));state.token=data.token;state.user=data.user;state.region=data.user.regions.includes(state.region)?state.region:data.user.regions[0];form.reset();await load();shell()}
+  else if(form.id==='login-form'){const data=await api('login',Object.fromEntries(new FormData(form)));state.token=data.token;state.user=data.user;state.region=data.user.regions.includes(state.region)?state.region:data.user.regions[0];form.reset();state.data={people:[],branches:[],users:[],audit:[]};state.datasets={};familyPicker()}
   else if(form.id==='user-form'){await api('users',Object.fromEntries(new FormData(form)));form.reset();await load();closeDialog();shell();toast('تم إنشاء المستخدم.')}
  }catch(e){if(error&&error.isConnected)error.textContent=e.message;else toast(e.message)}
  finally{state.busy=false;if(submit)submit.disabled=false}
 });
 if(window.PRIVATE_FAMILY_BUNDLE){const bundle=validateImport(window.PRIVATE_FAMILY_BUNDLE);state.datasets=bundle.regions;state.local=true;state.demo=true;state.data=state.datasets[state.region];state.collapsed=new Set(state.data.people.map(p=>p.id));delete window.PRIVATE_FAMILY_BUNDLE;}
-if(state.demo)shell();else{state.data={people:[],branches:[],users:[],audit:[]};state.user=null;loginScreen()}
+if(state.demo){if(state.local)shell();else familyPicker()}else{state.data={people:[],branches:[],users:[],audit:[]};state.user=null;loginScreen()}
