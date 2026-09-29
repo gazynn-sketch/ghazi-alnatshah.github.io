@@ -23,7 +23,8 @@ export function validatePerson(p, people, branches, id = '') {
     seen.add(parentId);
     const parent = people.find(x => x.id === parentId);
     if (!parent || parent.archived) { errors.push('الأب المختار غير متاح.'); break; }
-    if (parentId === p.parentId && parent.gender !== 'male') errors.push('حقل الأب يحتاج فردًا مسجلًا بصفة ذكر.');
+    if (p.region && parent.region && p.region !== parent.region) {errors.push('لا يمكن ربط أفراد من عائلتين مختلفتين.');break;}
+    if (parentId === p.parentId && parent.gender === 'female') errors.push('حقل الأب يحتاج فردًا مسجلًا بصفة ذكر.');
     if (parentId === p.parentId && parent.birthYear && p.birthYear && Number(parent.birthYear) >= Number(p.birthYear)) errors.push('سنة ميلاد الأب يجب أن تسبق سنة ميلاد الابن أو الابنة.');
     parentId = parent.parentId;
   }

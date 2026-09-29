@@ -1,0 +1,13 @@
+{
+  "name":"natsha-family-registry",
+  "main":"worker.mjs",
+  "compatibility_date":"2026-09-29",
+  "workers_dev":true,
+  "vars":{"ALLOWED_ORIGIN":"https://gazynn-sketch.github.io"},
+  "observability":{"enabled":false},
+  "d1_databases":[
+    {"binding":"AUTH_DB","database_name":"natsha-family-auth","database_id":"REPLACE_WITH_AUTH_DATABASE_ID"},
+    {"binding":"QUDS_DB","database_name":"natsha-family-quds","database_id":"REPLACE_WITH_QUDS_DATABASE_ID"},
+    {"binding":"JORDAN_DB","database_name":"natsha-family-jordan","database_id":"REPLACE_WITH_JORDAN_DATABASE_ID"}
+  ]
+}

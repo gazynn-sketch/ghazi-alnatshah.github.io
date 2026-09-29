@@ -6,3 +6,10 @@ natsha-private/
 *-tree.json
 family-data-private.json
 family-private.html
+
+# Cloudflare local state and private import/bootstrap SQL
+.wrangler/
+*-initial.sql
+*-admin.sql
+.env
+.dev.vars
