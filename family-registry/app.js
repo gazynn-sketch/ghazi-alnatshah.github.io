@@ -1,4 +1,4 @@
-import {API_BASE} from './config.js';
+import {API_BASE} from './config.js?v=20260929-cloudflare';
 import {createDemo} from './demo.js';
 import {fullName,arabicNumber as num,matches,validatePerson,csvCell,getAncestors,validateImport} from './core.mjs';
 
