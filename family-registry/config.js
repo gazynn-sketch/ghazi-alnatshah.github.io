@@ -1,3 +1,3 @@
-// Leave empty until the private API has been deployed and verified.
+// Public endpoint for the authenticated family registry service.
 // Never put credentials or family records in this public configuration.
-export const API_BASE = '';
+export const API_BASE = 'https://natsha-family-registry.gazynn.workers.dev';
