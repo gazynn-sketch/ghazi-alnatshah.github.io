@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS registry (
+ id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL DEFAULT 1,
+ data TEXT NOT NULL CHECK(json_valid(data))
+);
