@@ -1,4 +1,4 @@
-const CACHE='natsha-v22';
+const CACHE='natsha-v23';
 const ASSETS=['./','index.html','radio.html','mushaf.html','quran-player.html','kids-memorization.html','quran-stories-kids.html','quran-languages.html','notifications.html','business-ads.html','hadith.html','family-notifications.json','umrah.html','prayer.html','qibla.html','message-sender.html','join-notifications.html','natsha-family-logo.svg','natsha-project-poster.svg','privacy.html','manifest.json'];
 const ADMIN_FRESH=['family-admin.html','business-ads.html','notifications-config.js','family-admin-media-addon.js','whatsapp-dashboard-enhanced.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
@@ -6,6 +6,7 @@ self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET')return;
   const url=new URL(e.request.url);
+  if(url.origin!==self.location.origin || e.request.headers.has('Authorization') || e.request.cache==='no-store' || url.pathname.includes('/api/'))return;
   const fresh=ADMIN_FRESH.some(name=>url.pathname.endsWith('/'+name)||url.pathname.endsWith(name));
   if(fresh){
     e.respondWith(fetch(new Request(e.request,{cache:'no-store'})).catch(()=>caches.match(e.request)));

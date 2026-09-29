@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateImport,validatePerson,csvCell,matches,getAncestors} from '../family-registry/core.mjs';
+const person=(region,id,parentId='')=>({id:`${region}-${id}`,region,firstName:'أحمد',fatherName:'علي',grandName:'حسن',branch:'هاشم',gender:'unknown',marital:'unknown',life:'alive',parentId});
+const bundle=()=>({format:'natsha-family-v1',regions:{quds:{people:[person('quds',1),person('quds',2,'quds-1')],branches:['هاشم']},jordan:{people:[person('jordan',1)],branches:['هاشم']}}});
+test('same original ID stays distinct in two regions',()=>assert.equal(validateImport(bundle()).regions.quds.people.length,2));
+test('rejects cross-region parent',()=>{let b=bundle();b.regions.quds.people[1].parentId='jordan-1';assert.throws(()=>validateImport(b));});
+test('rejects duplicate IDs and ancestry cycles',()=>{let b=bundle();b.regions.quds.people.push(person('quds',1));assert.throws(()=>validateImport(b));b=bundle();b.regions.quds.people[0].parentId='quds-2';assert.throws(()=>validateImport(b));});
+test('rejects unsafe ID attributes',()=>{let b=bundle();b.regions.quds.people[0].id='quds-1" onclick="alert(1)';assert.throws(()=>validateImport(b));});
+test('Arabic search ignores diacritics and hamza',()=>assert.ok(matches(person('quds',1),'احمد علي')));
+test('CSV formula protection and quotes',()=>{assert.equal(csvCell('=1+1'),'"\'=1+1"');assert.equal(csvCell('a"b'),'"a""b"');});
+test('ancestors and invalid year validation',()=>{const b=bundle();assert.equal(getAncestors(b.regions.quds.people[1],b.regions.quds.people).length,1);assert.ok(validatePerson({...person('quds',2),birthYear:3000},[],['هاشم']).length);});

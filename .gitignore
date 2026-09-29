@@ -1,0 +1,8 @@
+
+# Private family exports must never enter this public repository
+natsha-private/
+*-source.json
+*-profiles.json
+*-tree.json
+family-data-private.json
+family-private.html
